@@ -8,6 +8,7 @@ import com.stool.studentcooperationtools.domain.member.service.MemberService;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,9 +26,15 @@ public class MemberApiController {
     @GetMapping("/api/v1/friends/search")
     public ApiResponse<MemberSearchResponse> searchFriends(
             @RequestParam("relation") boolean relation,
-            @RequestParam("name") String name,
+            @RequestParam("name") String searchNickName,
             SessionMember member){
-        MemberSearchResponse response = memberService.searchFriend(member, relation, name);
+
+        if(!StringUtils.hasText(searchNickName)){
+            //검색할 유저의 이름이 ""," ", null 경우
+            throw new IllegalArgumentException("검색할 유저의 이름을 입력해 주세요.");
+        }
+
+        MemberSearchResponse response = memberService.searchFriend(member, relation, searchNickName);
         return ApiResponse.of(HttpStatus.OK,response);
     }
 

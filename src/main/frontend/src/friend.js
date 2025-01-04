@@ -13,19 +13,23 @@ import mainlogo from "./images/mainlogo.png";
 
 
 const Friend = () => {
+    const [allFriends, setAllFriends] = useState({num : 0, friends : []}) // 전체 친구 목록
     const [newFriends, setNewFriends] = useState({num : 0, friends : []})
     const [searchFriendName, setSearchFriendName] = useState("");
     const [searchUserName, setSearchUserName] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [searchUsers, setSearchUser] = useState({num:0, users:[]})
-    const [friendData, setFriendData] = useState({num:0, members:[]})
     const [friends, setFriends] = useState({num: 0, members: []});
+    const [debouncedUserSearch, setDebouncedUserSearch] = useState("");
+    const [debouncedFriendSearch, setDebouncedFriendSearch] = useState(""); // 디바운스된 검색값
+
 
     function getFriends() {
         axios
             .get(domain + "/api/v1/friends")
             .then((res) => {
                 setFriends(res.data.data);
+                setAllFriends(res.data.data || {num : 0, friends: []});
             })
             .catch(() => {
                 console.log("failed to load friends");
@@ -35,6 +39,37 @@ const Friend = () => {
     useEffect(() => {
         getFriends();
     },[]);
+
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedFriendSearch(searchFriendName);
+        }, 500); // 1초 대기
+
+        return () => clearTimeout(handler); // 이전 타이머를 정리
+    }, [searchFriendName]);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedUserSearch(searchUserName);
+        }, 500); // 1초 대기
+
+        return () => clearTimeout(handler); // 이전 타이머를 정리
+    }, [searchUserName]);
+
+    useEffect(() => {
+        if (debouncedFriendSearch) {
+            findFriend(debouncedFriendSearch); // 검색 실행
+        } else {
+            setFriends(allFriends) // 검색어가 없을 경우 원래 전체 친구 목록으로 보이기
+        }
+    }, [debouncedFriendSearch]);
+
+    useEffect(() => {
+        if (debouncedUserSearch) {
+            findUser(debouncedUserSearch); // 검색 실행
+        }
+    }, [debouncedUserSearch]);
 
     const FriendsList = () => {
         return (
@@ -127,8 +162,8 @@ const Friend = () => {
         setSearchUserName("")
     };
 
-    const findUser = (nickName,relation) => {
-        getSearchResult(nickName, relation)
+    const findUser = (nickName) => {
+        getSearchResult(nickName, false)
             .then((results) => {
                 console.log("Search Results:", results);
                 setSearchUser((prevUser) => ({
@@ -142,17 +177,34 @@ const Friend = () => {
             });
     }
 
+    const findFriend = (nickName) => {
+        const filteredFriends = allFriends.friends?.filter((friend) =>
+            friend.nickname?.includes(nickName)
+        ) || [];
+        console.log(allFriends);
+        console.log(filteredFriends);
+        setFriends({
+            num : filteredFriends.length,
+            friends: filteredFriends
+        });
+    }
+
     return (
         <div className="container">
             <div className="friend-main">
                 <img src={mainlogo} className="under-logo"/>
                 <div className="search_box">
-                    <input className="friend_search_txt" type="text" placeholder="친구 이름을 입력하세요." value={searchFriendName}
-                           onChange={(e) => setSearchFriendName(e.target.value)}/>
+                    <input
+                        className="friend_search_txt"
+                        type="text"
+                        placeholder="친구 이름을 입력하세요."
+                        value={searchFriendName}
+                        onChange={(e) => setSearchFriendName(e.target.value)}
+                    />
                     <button
                         className="search_button"
                         type="submit"
-                        onClick={() => setSearchUser(getSearchResult(searchUserName,false))}
+                        onClick={() => findFriend(searchFriendName,true)}
                     >
                         <img src={searchIcon} alt="검색"/>
                     </button>
@@ -200,8 +252,13 @@ const Friend = () => {
                             X
                         </button>
                         <div className="add_friend_modal_search_box">
-                            <input className="friend_search_txt" type="text" placeholder="친구 이름을 입력하세요." value={searchUserName}
-                                   onChange={(e) => setSearchUserName(e.target.value)}/>
+                            <input
+                                className="friend_search_txt"
+                                type="text"
+                                placeholder="검색할 유저 이름을 입력하세요."
+                                value={searchUserName}
+                                onChange={(e) => setSearchUserName(e.target.value)}
+                            />
                             <button
                                 className="search_button"
                                 type="submit"

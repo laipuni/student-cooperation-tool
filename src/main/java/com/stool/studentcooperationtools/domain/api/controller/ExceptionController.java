@@ -3,13 +3,12 @@ package com.stool.studentcooperationtools.domain.api.controller;
 
 import com.stool.studentcooperationtools.domain.api.ApiExceptionResponse;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.validation.BindException;
 
 
 @RestControllerAdvice
@@ -54,10 +53,10 @@ public class ExceptionController {
 
     //방 제목 중복과 같이 중복된 값을 생성하려 할 때 발생하는 예외를 처리한다.
     @ExceptionHandler(DataIntegrityViolationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public ApiExceptionResponse<Object> DataIntegrityViolationException(DataIntegrityViolationException exception){
         return ApiExceptionResponse.of(
-                HttpStatus.CONFLICT,
+                HttpStatus.BAD_GATEWAY,
                 exception.getMessage(),
                 null
         );

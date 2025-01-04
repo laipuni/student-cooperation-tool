@@ -4,6 +4,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberSearchMemberDto;
 import com.stool.studentcooperationtools.domain.member.controller.request.QMemberSearchMemberDto;
+import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindMemberDto;
+import com.stool.studentcooperationtools.domain.member.controller.response.QMemberFindMemberDto;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
@@ -17,6 +19,22 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
 
     public MemberRepositoryCustomImpl(final EntityManager entityManager) {
         this.queryFactory = new JPAQueryFactory(entityManager);
+    }
+
+    @Override
+    public List<MemberFindMemberDto> findFriendsByMemberId(final Long memberId) {
+        return queryFactory.select(
+                        new QMemberFindMemberDto(
+                                member.nickName,
+                                member.profile,
+                                member.id
+                        )
+                )
+                .from(member)
+                .join(friendship)
+                .on(friendship.me.id.eq(memberId).and(friendship.friend.id.eq(member.id)))
+                .orderBy(member.nickName.asc(), member.id.asc()) // 가나다라 순으로, 만약 같다면 가입 순으로
+                .fetch();
     }
 
     @Override

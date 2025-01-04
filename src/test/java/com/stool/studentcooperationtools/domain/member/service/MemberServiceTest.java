@@ -224,7 +224,7 @@ class MemberServiceTest extends IntegrationTest {
         memberRepository.saveAll(List.of(user, memberA));
         SessionMember sessionMember = SessionMember.of(user);
         MemberAddRequest request = MemberAddRequest.builder()
-                .email(memberA.getEmail())
+                .friendId(memberA.getId())
                 .build();
         //when
         //then
@@ -235,7 +235,7 @@ class MemberServiceTest extends IntegrationTest {
     @DisplayName("유효하지 않은 이메일으로 친구 등록")
     void addFriendWithInValidEmail() {
         //given
-        String invalidEmail = "invalidEmail";
+        Long invalidId = 2025L;
         Member user = Member.builder()
                 .profile("profile")
                 .email("email")
@@ -251,7 +251,7 @@ class MemberServiceTest extends IntegrationTest {
         memberRepository.saveAll(List.of(user, memberA));
         SessionMember sessionMember = SessionMember.of(user);
         MemberAddRequest request = MemberAddRequest.builder()
-                .email(invalidEmail)
+                .friendId(invalidId)
                 .build();
         //when
         //then

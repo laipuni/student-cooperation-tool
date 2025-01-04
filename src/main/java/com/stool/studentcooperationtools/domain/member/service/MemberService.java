@@ -4,6 +4,7 @@ import com.stool.studentcooperationtools.domain.friendship.Friendship;
 import com.stool.studentcooperationtools.domain.friendship.repository.FriendshipRepository;
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberSearchMemberDto;
+import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindMemberDto;
 import com.stool.studentcooperationtools.domain.member.repository.MemberRepository;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberAddRequest;
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindResponse;
@@ -25,7 +26,7 @@ public class MemberService {
 
     //유저의 친구 목록 조회
     public MemberFindResponse findFriends(SessionMember member) {
-        List<Member> friends = memberRepository.findFriendsByMemberId(member.getMemberSeq());
+        List<MemberFindMemberDto> friends = memberRepository.findFriendsByMemberId(member.getMemberSeq());
         return MemberFindResponse.of(friends);
     }
 

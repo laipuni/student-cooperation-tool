@@ -42,7 +42,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                 MemberFindMemberDto.builder()
                         .id(1L)
                         .profile("profilePath")
-                        .email("email")
                         .nickname("nickname")
                         .build()
         );
@@ -95,7 +94,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                         MemberSearchMemberDto.builder()
                                 .id(1L)
                                 .profile("profilePath")
-                                .email("email")
                                 .nickname("nickname")
                                 .build()
                 );
@@ -156,7 +154,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                         MemberSearchMemberDto.builder()
                                 .id(1L)
                                 .profile("profilePath")
-                                .email("email")
                                 .nickname("nickname")
                                 .build()
                 );
@@ -212,7 +209,7 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
         void addFriend() throws Exception {
             //given
             MemberAddRequest request = MemberAddRequest.builder()
-                    .email("email@gmail.com")
+                    .friendId(1L)
                     .build();
 
             String content = objectMapper.writeValueAsString(request);
@@ -233,8 +230,8 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                                     preprocessRequest(prettyPrint()),
                                     preprocessResponse(prettyPrint()),
                                     requestFields(
-                                            fieldWithPath("email").type(STRING)
-                                                    .description("추가할 유저의 이메일")
+                                            fieldWithPath("friendId").type(NUMBER)
+                                                    .description("추가할 유저 식별키")
                                     ),
                                     responseFields(
                                             fieldWithPath("code").type(NUMBER)

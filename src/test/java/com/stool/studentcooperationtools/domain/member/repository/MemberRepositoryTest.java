@@ -1,7 +1,6 @@
 package com.stool.studentcooperationtools.domain.member.repository;
 
 import com.stool.studentcooperationtools.IntegrationTest;
-import com.stool.studentcooperationtools.domain.friendship.Friendship;
 import com.stool.studentcooperationtools.domain.friendship.repository.FriendshipRepository;
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.Role;
@@ -13,8 +12,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,32 +33,6 @@ class MemberRepositoryTest extends IntegrationTest {
 
     @Autowired
     ParticipationRepository participationRepository;
-
-    @Test
-    @DisplayName("사용자의 id로 친구 목록 조회")
-    void findFriendsByMemberId() {
-        //given
-        Member memberA = Member.builder()
-                .email("emailA")
-                .profile("profileA")
-                .nickName("nickA")
-                .role(Role.USER)
-                .build();
-
-        Member memberB = Member.builder()
-                .email("emailB")
-                .profile("profileB")
-                .nickName("nickB")
-                .role(Role.USER)
-                .build();
-        memberRepository.saveAll(List.of(memberA, memberB));
-        friendshipRepository.save(Friendship.of(memberA, memberB));
-        //when
-        List<Member> friendList = memberRepository.findFriendsByMemberId(memberA.getId());
-        //then
-        assertThat(friendList.get(0).getId()).isEqualTo(memberB.getId());
-
-    }
 
     @Test
     @DisplayName("유효한 이메일으로 유저 조회")

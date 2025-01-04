@@ -1,6 +1,7 @@
 package com.stool.studentcooperationtools.domain.member.controller.response;
 
 
+import com.querydsl.core.annotations.QueryProjection;
 import com.stool.studentcooperationtools.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,14 +9,13 @@ import lombok.Getter;
 @Getter
 public class MemberFindMemberDto {
 
-    private String email;
     private String nickname;
     private String profile;
     private Long id;
 
     @Builder
-    private MemberFindMemberDto(final String email, final String nickname, final String profile, final Long id) {
-        this.email = email;
+    @QueryProjection
+    public MemberFindMemberDto(final String nickname, final String profile, final Long id) {
         this.nickname = nickname;
         this.profile = profile;
         this.id = id;
@@ -24,7 +24,6 @@ public class MemberFindMemberDto {
     public static MemberFindMemberDto of(Member member){
         return MemberFindMemberDto.builder()
                 .id(member.getId())
-                .email(member.getEmail())
                 .nickname(member.getNickName())
                 .profile(member.getProfile())
                 .build();

@@ -12,8 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom{
-    @Query("select m from Member m join Friendship f on f.me.id = :memberId and f.friend.id = m.id order by m.nickName asc")
-    List<Member> findFriendsByMemberId(@Param("memberId") Long memberId);
     Optional<Member> findMemberByEmail(String email);
     @Query("select m from Member m where m.id in :memberIds")
     List<Member> findMembersByMemberIdList(@Param("memberIds") List<Long> memberIds);

@@ -6,6 +6,8 @@ import com.stool.studentcooperationtools.domain.friendship.repository.Friendship
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.Role;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberSearchMemberDto;
+import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindMemberDto;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,37 @@ class MemberRepositoryCustomImplTest extends IntegrationTest {
 
     @Autowired
     FriendshipRepository friendshipRepository;
+
+    @Test
+    @DisplayName("유저 id로 친구 목록 조회")
+    void findFriendsByMemberId() {
+        //given
+        Member memberA = Member.builder()
+                .email("emailA")
+                .profile("profileA")
+                .nickName("nickA")
+                .role(Role.USER)
+                .build();
+
+        Member memberB = Member.builder()
+                .email("emailB")
+                .profile("profileB")
+                .nickName("nickB")
+                .role(Role.USER)
+                .build();
+        memberRepository.saveAll(List.of(memberA, memberB));
+        friendshipRepository.save(Friendship.of(memberA, memberB));
+        //when
+        List<MemberFindMemberDto> friendList = memberRepository.findFriendsByMemberId(memberA.getId());
+        //then
+
+        assertThat(friendList).hasSize(1)
+                .extracting("nickname","profile")
+                .containsExactlyInAnyOrder(
+                        Tuple.tuple(memberB.getNickName(),memberB.getProfile())
+                );
+
+    }
 
     @Test
     @DisplayName("검색할 이름과 같고, 친구관계인 유저들을 조회한다.")

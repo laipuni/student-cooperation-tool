@@ -12,9 +12,16 @@ import Footer from "./footer";
 import mainlogo from "./images/mainlogo.png";
 
 
-const FriendsList = () => {
+const Friend = () => {
+    const [newFriends, setNewFriends] = useState({num : 0, friends : []})
+    const [searchFriendName, setSearchFriendName] = useState("");
+    const [searchUserName, setSearchUserName] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [searchUsers, setSearchUser] = useState({num:0, users:[]})
+    const [friendData, setFriendData] = useState({num:0, members:[]})
     const [friends, setFriends] = useState({num: 0, members: []});
-    useEffect(() => {
+
+    function getFriends() {
         axios
             .get(domain + "/api/v1/friends")
             .then((res) => {
@@ -23,68 +30,76 @@ const FriendsList = () => {
             .catch(() => {
                 console.log("failed to load friends");
             });
-    }, []);
+    }
 
-    return (
+    useEffect(() => {
+        getFriends();
+    },[]);
+
+    const FriendsList = () => {
+        return (
             <div className="friend_list">
-                <div id="newFriendDiv" className="newFriend-container"></div>
-                <div id="barDiv"></div>
                 <h2 id="friendsListH"></h2>
                 {friends.num > 0 ? (
                     <ul>
                         <div className="friends-li">
-                        <h2>친구 목록</h2>
-                        <div className="friends-card">
-                        {friends.members.map(friend => (
-                            <li key={friend.email}>
-                                <div className="profile-icon">
-                                    <img src={friend.profile} alt="프로필"/>
-                                </div>
-                                <span className="friend-name">{friend.nickname}</span>
-                            </li>)
-                        )}
-                        </div>
+                            <h2>친구 목록</h2>
+                            <div className="friends-card">
+                                {friends.members.map(friend => (
+                                    <li key={friend.email}>
+                                        <div className="profile-icon">
+                                            <img src={friend.profile} alt="프로필"/>
+                                        </div>
+                                        <span className="friend-name">{friend.nickname}</span>
+                                    </li>)
+                                )}
+                            </div>
                         </div>
                     </ul>
-                ) : <h1 style={{textAlign : "center", width: "1000px"}} id="notExistH">
-                    <div>
-                        <img src={friendship} height="300" width="300" style={{marginTop: "20px"}}/>
-                    </div>
-                    아직 등록된 친구가 없네요. 친구들을 찾아 볼까요?
-                </h1>}
-        </div>
-    );
-};
+                ) : <></>}
 
-const Friend = () => {
-    const [searchText, setSearchText] = useState("");
-    const [modalOpen, setModalOpen] = useState(false);
-    const [friendData, setFriendData] = useState({num:0, members:[]})
-    const handleSearchClick = () => {
-        axios
-            .get(domain + `/api/v1/friends/search?relation=false&name=${searchText}`)
+                {newFriends.num > 0 || friends.num > 0 ?
+                    <></> :
+                    (<h1 style={{textAlign : "center", width: "1000px"}} id="notExistH">
+                        <div>
+                            <img src={friendship} height="300" width="300" style={{marginTop: "20px"}}/>
+                        </div>
+                        아직 등록된 친구가 없네요. 친구들을 찾아 볼까요?
+                    </h1>)
+                }
+            </div>
+        );
+    };
+
+    const getSearchResult = (nickName,relation) => {
+        if (!nickName || nickName.trim() === "") {
+            // 검색어가 없을 경우 검색하지 않음
+            return Promise.resolve(undefined);
+        }
+
+        return axios
+            .get(`${domain}/api/v1/friends/search?relation=${relation}&name=${nickName}`)
             .then((res) => {
-                setFriendData(res.data.data);
-                setModalOpen(true);
+                console.log(res.data.data);
+                return res.data.data;
             })
-            .catch(() => {
-                console.log("Failed to search friend.");
-                setModalOpen(true);
+            .catch((error) => {
+                console.error(error);
+                return undefined;
             });
     };
 
-    const handleAddFriend = (email, profile, nickname) => {
+    const handleAddFriend = (id, profile, nickname) => {
         axios
             .post(`${domain}/api/v1/friends`, {
-                email
+                friendId: id
             },  { "Content-Type": "application/json"},)
             .then((res) => {
-                createFriendDiv(email,profile, nickname);
-
-                setFriendData((prevData) => ({
-                    ...prevData,
-                    members: prevData.members.filter(friend => friend.email !== email),
-                    num: prevData.num - 1,
+                putNewFriend(id,profile, nickname);
+                setSearchUser((prevUsers) => ({
+                    ...prevUsers,
+                    num: prevUsers.num - 1,
+                    users: prevUsers.users.filter(friend => friend.id !== id),
                 }));
             })
             .catch(() => {
@@ -92,54 +107,85 @@ const Friend = () => {
             });
     };
 
-    function createFriendDiv(email,profile, nickname){
-        const newFriendDiv = document.getElementById('newFriendDiv')
-        if(newFriendDiv.querySelector('h2') === null){
-            newFriendDiv.innerHTML += `<h2>새로운 친구</h2>`
-        }
-        const barDiv = document.querySelector('#barDiv');
-        const notExistH = document.querySelector('#notExistH');
+    function putNewFriend(id, profile, nickname) {
+        const newFriend = {
+            id: id,
+            profile: profile,
+            nickname: nickname,
+        };
 
-        if (notExistH) {
-            //친구가 없는 상태일 때 친구를 사겼을 경우
-            let friendsListH = document.querySelector('#friendsListH')
-            friendsListH.parentNode.removeChild(friendsListH)
-            notExistH.parentNode.removeChild(notExistH)
-        } else{
-            barDiv.setAttribute("class","divider-bar")
-        }
-        // 새롭게 생긴 친구를 삽입
-        newFriendDiv.innerHTML +=
-            `
-            <li key=${email}>
-              <div class="profile-icon">
-                <img src = ${profile} alt="프로필"/>
-              </div>
-              <span class="friend-name">${nickname}</span>
-            </li>
-          `
+        setNewFriends((preFriends) => ({
+            ...preFriends,
+            num: preFriends.num + 1, // num 값을 증가시킴
+            friends: [...preFriends.friends, newFriend], // 기존 배열에 새 친구 추가
+        }));
     }
 
     const handleCloseModal = () => {
         setModalOpen(false);
-        setFriendData(null); // 모달창 닫을 때 데이터 초기화
+        setSearchUser({num : 0, users: []}); // 모달창 닫을 때 데이터 초기화
+        setSearchUserName("")
     };
+
+    const findUser = (nickName,relation) => {
+        getSearchResult(nickName, relation)
+            .then((results) => {
+                console.log("Search Results:", results);
+                setSearchUser((prevUser) => ({
+                    ...prevUser,
+                    num: results.num,
+                    users: results.members,
+                }));
+            })
+            .catch((error) => {
+                console.error("Error fetching results:", error);
+            });
+    }
 
     return (
         <div className="container">
             <div className="friend-main">
                 <img src={mainlogo} className="under-logo"/>
-                <form className="search_box" onSubmit={(e) => e.preventDefault()}>
-                    <input className="friend_search_txt" type="text" placeholder="친구 이름을 입력하세요." value={searchText}
-                           onChange={(e) => setSearchText(e.target.value)}/>
+                <div className="search_box">
+                    <input className="friend_search_txt" type="text" placeholder="친구 이름을 입력하세요." value={searchFriendName}
+                           onChange={(e) => setSearchFriendName(e.target.value)}/>
                     <button
                         className="search_button"
                         type="submit"
-                        onClick={handleSearchClick}
+                        onClick={() => setSearchUser(getSearchResult(searchUserName,false))}
                     >
                         <img src={searchIcon} alt="검색"/>
                     </button>
-                </form>
+                </div>
+                <div>
+                    <button className="add_friend_modal_button" onClick={() => setModalOpen(true)}>
+                        친구 추가
+                    </button>
+                </div>
+                <div className="friends-list-wrapper">
+                    {newFriends.num > 0 ? (
+                        <>
+                            <div className="friend_list">
+                                <div className="friends-li">
+                                    <h2>추가된 친구</h2>
+                                    <ul>
+                                        <div className="friends-card">
+                                            {newFriends.friends.map(newFriend => (
+                                                <li key={newFriend.id}>
+                                                    <div className="profile-icon">
+                                                        <img src={newFriend.profile} alt={`${newFriend.nickname} 프로필`}/>
+                                                    </div>
+                                                    <span className="friend-name">{newFriend.nickname}</span>
+                                                </li>)
+                                            )}
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </>
+                    ) : <></>
+                    }
+                </div>
                 <div className="friends-list-wrapper">
                     <FriendsList/> {/* 친구 목록 표시 */}
                 </div>
@@ -147,33 +193,41 @@ const Friend = () => {
             <Footer/>
 
             {modalOpen && (
-
                 <div className="modal_overlay" onClick={handleCloseModal}>
                     <div className="friend_modal_content" onClick={(e) => e.stopPropagation()} >
-
-                        <h3>검색 결과</h3>
+                        <h3>친구 추가</h3>
                         <button className="close_button" onClick={handleCloseModal}>
                             X
                         </button>
+                        <div className="add_friend_modal_search_box">
+                            <input className="friend_search_txt" type="text" placeholder="친구 이름을 입력하세요." value={searchUserName}
+                                   onChange={(e) => setSearchUserName(e.target.value)}/>
+                            <button
+                                className="search_button"
+                                type="submit"
+                                onClick={() => findUser(searchUserName,false)}
+                            >
+                                <img src={searchIcon} alt="검색"/>
+                            </button>
+                        </div>
                         <div className="friend_result scrollbar">
-                            {friendData.num > 0 ? (
-                                    <ul>
-                                        {friendData.members.map(friend => (
-                                            <li key={friend.email}>
+                            <ul>
+                                {searchUsers.num !== 0 ? (
+                                    searchUsers.users.map(user => (
+                                            <li key={user.email}>
                                                 <div className = "friend_profile">
                                                     <div className="profile-icon">
-                                                        <img src={friend.profile} alt="프로필"/>
+                                                        <img src={user.profile} alt="프로필"/>
                                                     </div>
-                                                    <span className="friend-name">{friend.nickname}</span>
-                                                    <button className="add_friend_button" onClick={() => handleAddFriend(friend.email,friend.profile,friend.nickname)}>
+                                                    <span className="friend-name">{user.nickname}</span>
+                                                    <button className="add_friend_button" onClick={() => handleAddFriend(user.id,user.profile,user.nickname)}>
                                                         +
                                                     </button>
                                                 </div>
                                             </li>)
-                                        )}
-                                    </ul>)
-                                : (
-                                    <p > 해당하는 친구가 없어요. 다시 확인하고 입력해주세요.</p>)}
+                                    ))
+                                 : <></>}
+                            </ul>
                         </div>
                     </div>
                 </div>

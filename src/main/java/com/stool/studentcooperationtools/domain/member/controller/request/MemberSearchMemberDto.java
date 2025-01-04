@@ -8,15 +8,13 @@ import lombok.Getter;
 @Getter
 public class MemberSearchMemberDto {
 
-    private String email;
     private String nickname;
     private String profile;
     private Long id;
 
     @Builder
     @QueryProjection
-    public MemberSearchMemberDto(final String email, final String nickname, final String profile, final Long id) {
-        this.email = email;
+    public MemberSearchMemberDto(final String nickname, final String profile, final Long id) {
         this.nickname = nickname;
         this.profile = profile;
         this.id = id;
@@ -25,7 +23,6 @@ public class MemberSearchMemberDto {
     public static MemberSearchMemberDto of(Member member){
         return MemberSearchMemberDto.builder()
                 .id(member.getId())
-                .email(member.getEmail())
                 .nickname(member.getNickName())
                 .profile(member.getProfile())
                 .build();

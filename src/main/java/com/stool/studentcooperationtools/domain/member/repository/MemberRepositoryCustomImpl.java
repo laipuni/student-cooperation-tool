@@ -23,7 +23,6 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
     public List<MemberSearchMemberDto> findFriendsByMemberNickName(final String nickName, final Long memberId, final boolean isFriendRelation) {
         return queryFactory.select(
                         new QMemberSearchMemberDto(
-                                member.email,
                                 member.nickName,
                                 member.profile,
                                 member.id

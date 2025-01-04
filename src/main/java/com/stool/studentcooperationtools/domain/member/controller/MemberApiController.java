@@ -6,6 +6,7 @@ import com.stool.studentcooperationtools.domain.member.controller.response.Membe
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberSearchResponse;
 import com.stool.studentcooperationtools.domain.member.service.MemberService;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
@@ -39,7 +40,7 @@ public class MemberApiController {
     }
 
     @PostMapping("/api/v1/friends")
-    public ApiResponse<Boolean> addFriend(SessionMember member, @RequestBody MemberAddRequest request){
+    public ApiResponse<Boolean> addFriend(SessionMember member, @Valid @RequestBody MemberAddRequest request){
         Boolean result = memberService.addFriend(member, request);
         return ApiResponse.of(HttpStatus.OK,result);
     }

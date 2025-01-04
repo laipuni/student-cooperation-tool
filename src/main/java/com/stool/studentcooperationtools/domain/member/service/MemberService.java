@@ -41,14 +41,12 @@ public class MemberService {
         return MemberSearchResponse.of(findFriends);
     }
 
-    //친구추가 - 1. 검색한 email을 가진 멤버 조회 2. friendship 엔티티 만들어서 등록
     @Transactional
     public Boolean addFriend(SessionMember member, final MemberAddRequest request) {
         Member user = memberRepository.findById(member.getMemberSeq())
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보를 찾을 수 없습니다."));
-        String findEmail = request.getEmail();
-        Member friend = memberRepository.findMemberByEmail(findEmail)
-                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 유저가 존재하지 않습니다."));
+        Member friend = memberRepository.findById(request.getFriendId())
+                .orElseThrow(() -> new IllegalArgumentException("친구 추가할 유저가 존재하지 않습니다."));
         friendshipRepository.save(Friendship.of(user, friend));
         return true;
     }

@@ -37,12 +37,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService  {
                 .getUserInfoEndpoint()
                 .getUserNameAttributeName();
         String accessToken = userRequest.getAccessToken().getTokenValue();
-        try {
-            googleCredentialProvider.initializeCredential(accessToken);
-        }
-        catch(IOException e){
-            throw new OAuth2AuthenticationException(e.getMessage());
-        }
+        initializeCredential(accessToken);
 
         OAuthAttributes attributes = OAuthAttributes.of(
                 registrationId,
@@ -59,6 +54,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService  {
                 attributes.getAttributes(),
                 attributes.getAttributesNameKey()
         );
+    }
+
+    private void initializeCredential(final String accessToken) {
+        try {
+            googleCredentialProvider.initializeCredential(accessToken);
+        }
+        catch(IOException e){
+            throw new OAuth2AuthenticationException(e.getMessage());
+        }
     }
 
     private Member saveOrUpdate(final OAuthAttributes attributes) {

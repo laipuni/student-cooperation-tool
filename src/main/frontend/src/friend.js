@@ -10,11 +10,12 @@ import "./bar.css"
 import "./juaFont.css"
 import Footer from "./footer";
 import mainlogo from "./images/mainlogo.png";
+import {createFuzzyMatcher} from "./searchRexp";
 
 
 const Friend = () => {
-    const [allFriends, setAllFriends] = useState({num : 0, friends : []}) // 전체 친구 목록
-    const [newFriends, setNewFriends] = useState({num : 0, friends : []})
+    const [allFriends, setAllFriends] = useState({num : 0, members : []}) // 전체 친구 목록
+    const [newFriends, setNewFriends] = useState({num : 0, members : []})
     const [searchFriendName, setSearchFriendName] = useState("");
     const [searchUserName, setSearchUserName] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
@@ -28,8 +29,14 @@ const Friend = () => {
         axios
             .get(domain + "/api/v1/friends")
             .then((res) => {
-                setFriends(res.data.data);
-                setAllFriends(res.data.data || {num : 0, friends: []});
+                setFriends(
+                    { num : res.data.data.num, members : res.data.data.members}
+                    || {num : 0, members: []}
+                );
+                setAllFriends(
+                    { num : res.data.data.num, members : res.data.data.members}
+                    || {num : 0, members: []}
+                );
             })
             .catch(() => {
                 console.log("failed to load friends");
@@ -80,12 +87,12 @@ const Friend = () => {
                         <div className="friends-li">
                             <h2>친구 목록</h2>
                             <div className="friends-card">
-                                {friends.members.map(friend => (
-                                    <li key={friend.email}>
+                                {friends.members.map(member => (
+                                    <li key={member.email}>
                                         <div className="profile-icon">
-                                            <img src={friend.profile} alt="프로필"/>
+                                            <img src={member.profile} alt="프로필"/>
                                         </div>
-                                        <span className="friend-name">{friend.nickname}</span>
+                                        <span className="friend-name">{member.nickname}</span>
                                     </li>)
                                 )}
                             </div>
@@ -149,10 +156,10 @@ const Friend = () => {
             nickname: nickname,
         };
 
-        setNewFriends((preFriends) => ({
-            ...preFriends,
-            num: preFriends.num + 1, // num 값을 증가시킴
-            friends: [...preFriends.friends, newFriend], // 기존 배열에 새 친구 추가
+        setNewFriends((preMembers) => ({
+            ...preMembers,
+            num: preMembers.num + 1, // num 값을 증가시킴
+            members: [...preMembers.members, newFriend], // 기존 배열에 새 친구 추가
         }));
     }
 
@@ -165,7 +172,6 @@ const Friend = () => {
     const findUser = (nickName) => {
         getSearchResult(nickName, false)
             .then((results) => {
-                console.log("Search Results:", results);
                 setSearchUser((prevUser) => ({
                     ...prevUser,
                     num: results.num,
@@ -178,14 +184,16 @@ const Friend = () => {
     }
 
     const findFriend = (nickName) => {
-        const filteredFriends = allFriends.friends?.filter((friend) =>
-            friend.nickname?.includes(nickName)
-        ) || [];
+        const searchRegExp = createFuzzyMatcher(nickName)
+        const filteredFriends = allFriends.members?.filter((member) => {
+            return searchRegExp.test(member.nickname)
+        }) || [];
+
         console.log(allFriends);
         console.log(filteredFriends);
         setFriends({
             num : filteredFriends.length,
-            friends: filteredFriends
+            members: filteredFriends
         });
     }
 
@@ -204,7 +212,7 @@ const Friend = () => {
                     <button
                         className="search_button"
                         type="submit"
-                        onClick={() => findFriend(searchFriendName,true)}
+                        onClick={() => findFriend(searchFriendName)}
                     >
                         <img src={searchIcon} alt="검색"/>
                     </button>
@@ -222,7 +230,7 @@ const Friend = () => {
                                     <h2>추가된 친구</h2>
                                     <ul>
                                         <div className="friends-card">
-                                            {newFriends.friends.map(newFriend => (
+                                            {newFriends.members.map(newFriend => (
                                                 <li key={newFriend.id}>
                                                     <div className="profile-icon">
                                                         <img src={newFriend.profile} alt={`${newFriend.nickname} 프로필`}/>

@@ -11,13 +11,16 @@ function ch2pattern(ch) {
         if (chCode % 28 > 0) {
             return ch;
         }
+        //위 if문으로 인해 28로 나누면 0인 경우만 해당 라인으로 넘어온다.
+        //따라서 Math.floor가 필요없을 수 있지만, 부동 소수점으로 인해 만약을 대비해서 붙였다.
+        //chCode + offset으로 써도 결과는 똑같이 나오긴 하다.
         const begin = Math.floor(chCode / 28) * 28 + offset;
         const end = begin + 27; // 종성 28가지 경우 다 포함
         return `[\\u${begin.toString(16)}-\\u${end.toString(16)}]`;
     }
     // 한글 자음
     if (/[ㄱ-ㅎ]/.test(ch)) {
-        const con2syl = {
+        const exceptWords = {
             'ㄱ': '가'.charCodeAt(0),
             'ㄲ': '까'.charCodeAt(0),
             'ㄴ': '나'.charCodeAt(0),
@@ -29,7 +32,7 @@ function ch2pattern(ch) {
             'ㅃ': '빠'.charCodeAt(0),
             'ㅅ': '사'.charCodeAt(0),
         };
-        const begin = con2syl[ch] || ( ( ch.charCodeAt(0) - 12613 /* 'ㅅ'의 코드 */ ) * 588 + con2syl['ㅅ'] );
+        const begin = exceptWords[ch] || ( ( ch.charCodeAt(0) - 12613 /* 'ㅅ'의 코드 */ ) * 588 + exceptWords['ㅅ'] );
         const end = begin + 587; // 중성(21) * 종성(28) = 588의 경우를 합쳤다.
         return `[${ch}\\u${begin.toString(16)}-\\u${end.toString(16)}]`;
     }

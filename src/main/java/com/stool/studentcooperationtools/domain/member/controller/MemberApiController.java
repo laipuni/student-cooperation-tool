@@ -18,13 +18,13 @@ public class MemberApiController {
 
     private final MemberService memberService;
 
-    @GetMapping("/api/v1/friends")
+    @GetMapping("/api/v2/friends")
     public ApiResponse<MemberFindResponse> findFriends(SessionMember member){
         MemberFindResponse response = memberService.findFriends(member);
         return ApiResponse.of(HttpStatus.OK,response);
     }
 
-    @GetMapping("/api/v1/friends/search")
+    @GetMapping("/api/v2/friends/search")
     public ApiResponse<MemberSearchResponse> searchFriends(
             @RequestParam("relation") boolean relation,
             @RequestParam("name") String searchNickName,

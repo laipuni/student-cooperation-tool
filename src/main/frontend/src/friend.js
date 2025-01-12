@@ -27,7 +27,7 @@ const Friend = () => {
 
     function getFriends() {
         axios
-            .get(domain + "/api/v1/friends")
+            .get(domain + "/api/v2/friends")
             .then((res) => {
                 setFriends(
                     { num : res.data.data.num, members : res.data.data.members}
@@ -120,7 +120,7 @@ const Friend = () => {
         }
 
         return axios
-            .get(`${domain}/api/v1/friends/search?relation=${relation}&name=${nickName}`)
+            .get(`${domain}/api/v2/friends/search?relation=${relation}&name=${nickName}`)
             .then((res) => {
                 console.log(res.data.data);
                 return res.data.data;

@@ -1,11 +1,13 @@
 package com.stool.studentcooperationtools.domain.room.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.stool.studentcooperationtools.domain.room.controller.response.QRoomSearchDto;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchDto;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
+import com.stool.studentcooperationtools.domain.room.controller.response.*;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
@@ -21,6 +23,37 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom{
 
     public RoomRepositoryCustomImpl(final EntityManager entityManager) {
         this.queryFactory = new JPAQueryFactory(entityManager);
+    }
+
+    @Override
+    public RoomsFindResponse findRoomsByMemberIdWithPagination(final Long memberId, final int page) {
+        List<RoomFindDto> result = queryFactory.select(
+                        new QRoomFindDto(
+                                room.id,
+                                room.title,
+                                room.mainTopic.topic,
+                                room.participationNum
+                        )
+                )
+                .from(room)
+                .leftJoin(room.mainTopic)
+                .where(room.leader.id.eq(memberId))
+                .orderBy(room.title.desc(), room.id.desc())
+                .offset(page)
+                .limit(ROOM_PAGE_SIZE)
+                .fetch();
+
+        JPAQuery<Long> countQuery = queryFactory.select(room.count())
+                .from(room)
+                .where(room.leader.id.eq(memberId));
+
+        PageRequest pageRequest = PageRequest.of(page, ROOM_PAGE_SIZE);
+
+        Page<RoomFindDto> paginationResult = PageableExecutionUtils.getPage(
+                result, pageRequest, countQuery::fetchOne
+        );
+
+        return RoomsFindResponse.of(paginationResult);
     }
 
     @Override

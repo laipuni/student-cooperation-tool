@@ -38,7 +38,7 @@ const RoomList = ({setCreateModal}) => {
     // 방 목록 가져오기 (페이지에 따라 호출)
     const fetchRooms = (page) => {
         axios
-            .get(domain + `/api/v1/rooms?page=${page}`)
+            .get(domain + `/api/v2/rooms?page=${page}`)
             .then((res) => {
                 setRooms(res.data.data);
                 setCurrentPage(page); // 현재 페이지 업데이트

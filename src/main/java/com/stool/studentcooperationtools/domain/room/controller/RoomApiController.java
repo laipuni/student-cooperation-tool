@@ -24,7 +24,7 @@ public class RoomApiController {
     private final RoomService roomService;
     private final RoomDeleteService roomDeleteService;
 
-    @GetMapping("/api/v1/rooms")
+    @GetMapping("/api/v2/rooms")
     public ApiResponse<RoomsFindResponse> findRooms(SessionMember member, @RequestParam("page") int page){
         RoomsFindResponse response = roomService.findRooms(member, page);
         return ApiResponse.of(HttpStatus.OK,response);

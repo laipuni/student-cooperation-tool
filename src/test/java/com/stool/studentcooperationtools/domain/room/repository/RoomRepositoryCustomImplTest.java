@@ -8,6 +8,7 @@ import com.stool.studentcooperationtools.domain.participation.Participation;
 import com.stool.studentcooperationtools.domain.participation.repository.ParticipationRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
+import com.stool.studentcooperationtools.domain.room.controller.response.RoomsFindResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.stool.studentcooperationtools.domain.PagingUtils.ROOM_PAGING_PARSE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
@@ -28,6 +30,41 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
 
     @Autowired
     ParticipationRepository participationRepository;
+
+    @Test
+    @DisplayName("참여중인 방을 페이지당 5개씩 조회할 때, 첫번째 페이지를 조회한다.")
+    void findAllByMemberIdWithRoom() {
+        //given
+        Member member = Member.builder()
+                .role(Role.USER)
+                .email("email@.email.com")
+                .profile("profile")
+                .nickName("nickname")
+                .build();
+        memberRepository.save(member);
+
+        List<String> titleList = List.of("title1","title2","title3","title4","title5","title6");
+
+        for (String title : titleList) {
+            // 6개의 room과 participation을 등록 함
+            Room room = createRoom(title, member);
+            Participation participation = Participation.builder()
+                    .member(member)
+                    .room(room)
+                    .build();
+            roomRepository.save(room);
+            participationRepository.save(participation);
+        }
+
+        List<Room> rooms = roomRepository.findAll();
+
+        //when
+        RoomsFindResponse result = roomRepository.findRoomsByMemberIdWithPagination(member.getId(), 0);
+        //then
+        assertThat(result).extracting("num","totalPage","firstPage","lastPage")
+                        .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,5);
+        assertThat(result.getRooms()).hasSize(5);
+    }
 
     @Test
     @DisplayName("참여한 방을 검색할 때, 검색어와 같은 방의 첫 페이지를 조회하고 다음 페이지가 존재한다.")

@@ -36,9 +36,7 @@ public class RoomService {
     private final ParticipationRepository participationRepository;
 
     public RoomsFindResponse findRooms(SessionMember member, final int page) {
-        Pageable pageable = PageRequest.of(page, PagingUtils.ROOM_PAGING_PARSE);
-        Page<Room> rooms = roomRepository.findRoomsByMemberIdWithPage(member.getMemberSeq(), pageable);
-        return RoomsFindResponse.of(rooms.getTotalElements(), page ,rooms.getTotalPages(), rooms.getContent());
+        return roomRepository.findRoomsByMemberIdWithPagination(member.getMemberSeq(), page);
     }
 
     @Transactional

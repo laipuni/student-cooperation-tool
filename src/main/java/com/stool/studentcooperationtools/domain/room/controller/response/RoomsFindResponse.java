@@ -3,23 +3,23 @@ package com.stool.studentcooperationtools.domain.room.controller.response;
 import com.stool.studentcooperationtools.domain.room.Room;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-import static com.stool.studentcooperationtools.domain.PagingUtils.getEndPage;
-import static com.stool.studentcooperationtools.domain.PagingUtils.getRoomPagingStartPage;
+import static com.stool.studentcooperationtools.domain.PagingUtils.*;
 
 @Getter
 public class RoomsFindResponse {
 
-    private long num;
+    private int num;
     private int totalPage;
     private int firstPage;
     private int lastPage;
     private List<RoomFindDto> rooms;
 
     @Builder
-    private RoomsFindResponse(final long num, final int totalPage, final int firstPage, final int lastPage, final List<RoomFindDto> rooms) {
+    private RoomsFindResponse(final int num, final int totalPage, final int firstPage, final int lastPage, final List<RoomFindDto> rooms) {
         this.num = num;
         this.firstPage = firstPage;
         this.lastPage = lastPage;
@@ -27,7 +27,7 @@ public class RoomsFindResponse {
         this.rooms = rooms;
     }
 
-    public static RoomsFindResponse of(final long num,final int nowPage, final int totalPage, final List<Room> rooms){
+    public static RoomsFindResponse of(final int num,final int nowPage, final int totalPage, final List<Room> rooms){
         int roomPagingStartPage = getRoomPagingStartPage(nowPage);
         return RoomsFindResponse.builder()
                 .num(num)
@@ -38,6 +38,21 @@ public class RoomsFindResponse {
                         rooms.stream()
                                 .map(RoomFindDto::of)
                                 .toList()
+                )
+                .build();
+    }
+
+    public static RoomsFindResponse of(final Page<RoomFindDto> paginationResult) {
+        int startPage = getRoomPagingStartPage(paginationResult.getNumber());
+        int endPage = getRoomPagingLastPage(startPage,paginationResult.getTotalPages());
+
+        return RoomsFindResponse.builder()
+                .num(paginationResult.getContent().size())
+                .firstPage(startPage)
+                .lastPage(endPage)
+                .totalPage(paginationResult.getTotalPages())
+                .rooms(
+                        paginationResult.getContent()
                 )
                 .build();
     }

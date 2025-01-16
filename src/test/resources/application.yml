@@ -18,6 +18,10 @@ spring:
     hibernate:
       ddl-auto: create
     database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
   security:
     oauth2:
@@ -27,6 +31,12 @@ spring:
             client-id: test
             client-secret: test
             scope: email, profile
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
 
 google:
   slides:

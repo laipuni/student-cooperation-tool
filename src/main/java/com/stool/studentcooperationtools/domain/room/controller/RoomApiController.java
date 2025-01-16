@@ -44,6 +44,17 @@ public class RoomApiController {
         return ApiResponse.of(HttpStatus.OK,response);
     }
 
+    @GetMapping("/api/v2/rooms/search")
+    public ApiResponse<RoomSearchResponse> searchRoom(
+            @RequestParam("isParticipation") boolean isParticipation,
+            @RequestParam("title") String title,
+            @RequestParam("page") int page,
+            SessionMember sessionMember
+    ){
+        RoomSearchResponse response = roomService.searchRoom(title, page, isParticipation, sessionMember.getMemberSeq());
+        return ApiResponse.of(HttpStatus.OK,response);
+    }
+
     @DeleteMapping("/api/v1/rooms")
     public ApiResponse<Boolean> removeRoom(SessionMember member, @Valid @RequestBody RoomRemoveRequest request) {
         Boolean result = roomDeleteService.removeRoom(member, request);

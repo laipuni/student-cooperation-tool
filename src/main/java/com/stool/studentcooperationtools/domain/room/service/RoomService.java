@@ -9,10 +9,7 @@ import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.controller.request.RoomAddRequest;
 import com.stool.studentcooperationtools.domain.room.controller.request.RoomEnterRequest;
 import com.stool.studentcooperationtools.domain.room.controller.request.RoomTopicUpdateRequest;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomAddResponse;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomEnterResponse;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomsFindResponse;
+import com.stool.studentcooperationtools.domain.room.controller.response.*;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
@@ -75,6 +72,13 @@ public class RoomService {
         Pageable pageable = PageRequest.of(page, PagingUtils.ROOM_PAGING_PARSE);
         Page<Room> rooms = roomRepository.findRoomsByTitleWithPage(title, pageable);
         return RoomSearchResponse.of(rooms.isLast(),rooms.getContent());
+    }
+
+    public RoomSearchResponse searchRoom(
+            final String title, final int page,
+            final boolean isParticipation, final Long memberId
+    ) {
+        return roomRepository.findRooms(title, page, isParticipation,memberId);
     }
 
     @Transactional

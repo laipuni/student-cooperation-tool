@@ -1,6 +1,7 @@
 package com.stool.studentcooperationtools.domain.room.controller.response;
 
 import com.stool.studentcooperationtools.domain.room.Room;
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,7 +21,7 @@ public class RoomSearchResponse {
         this.rooms = rooms;
     }
 
-    public static RoomSearchResponse of(boolean isLast,List<Room> rooms){
+    public static RoomSearchResponse of(final boolean isLast, final List<Room> rooms){
         return RoomSearchResponse.builder()
                 .num(rooms.size())
                 .isLast(isLast)
@@ -32,4 +33,11 @@ public class RoomSearchResponse {
                 .build();
     }
 
+    public static RoomSearchResponse of(final boolean isLast, final List<RoomSearchDto> roomDtos, @Nullable final List<Room> rooms) {
+        return RoomSearchResponse.builder()
+                .num(roomDtos.size())
+                .isLast(isLast)
+                .rooms(roomDtos)
+                .build();
+    }
 }

@@ -41,7 +41,7 @@ public class RoomService {
         try {
             roomRepository.save(room);
         } catch (DataIntegrityViolationException e){
-            throw new DataIntegrityViolationException("방 제목 중복 오류입니다");
+            throw new DataIntegrityViolationException("중복된 방 제목입력하셨습니다.");
         }
         participationRepository.save(Participation.of(user, room));
         List<Member> memberList = memberRepository.findMembersByMemberIdList(request.getParticipation());
@@ -65,9 +65,9 @@ public class RoomService {
     @Transactional
     public RoomEnterResponse enterRoom(SessionMember member, final RoomEnterRequest request){
         Room room = roomRepository.findRoomWithPLock(request.getRoomId())
-                .orElseThrow(()-> new IllegalArgumentException("방 id 오류"));
+                .orElseThrow(()-> new IllegalArgumentException("해당 방은 존재하지 않습니다."));
         if(!room.verifyPassword(request.getPassword())) {
-            throw new IllegalArgumentException("올바르지 않은 비밀번호입니다");
+            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
         }
         addParticipation(member,room);
         return RoomEnterResponse.builder()
@@ -86,19 +86,19 @@ public class RoomService {
     @Transactional
     public Boolean updateRoomTopic(SessionMember member, final RoomTopicUpdateRequest request) {
         Room room = roomRepository.findRoomByRoomId(member.getMemberSeq(), request.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 방 정보입니다"));
+                .orElseThrow(() -> new IllegalArgumentException("방이 존재하지 않습니다"));
         if(!Objects.equals(member.getMemberSeq(), room.getLeader().getId())){
-            throw new IllegalArgumentException("팀장의 권한이 부여되지 않았습니다");
+            throw new IllegalArgumentException("해당 작업의 권한이 없습니다.");
         }
         room.updateTopic(topicRepository.findById(request.getTopicId())
-                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 주제 정보입니다")));
+                .orElseThrow(() -> new IllegalArgumentException("주제가 존재하지 않습니다")));
         return true;
     }
 
     //해당 방에 참여한 인원인지 확인하고, 아니라면 접근 제한 예외 발생
     public void validParticipationInRoom(final Long roomId, final SessionMember sessionMember) {
         if(!roomRepository.existMemberInRoom(sessionMember.getMemberSeq(),roomId)){
-            throw new AccessDeniedException("해당 방에 참여하지 않아 권한이 없습니다.");
+            throw new AccessDeniedException("해당 작업의 권한이 없습니다.");
         }
     }
 }

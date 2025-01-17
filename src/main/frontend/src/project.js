@@ -195,9 +195,19 @@ const Project = () => {
                     closeEnterModal()
                 }
             })
-            .catch(() =>{
-                const passwordInvalidDiv = document.getElementById("passwordInvalidDiv");
-                passwordInvalidDiv.innerHTML = '<span style="color:red;">해당 비밀번호는 틀렸습니다. 다시 입력해주세요.</span>'
+            .catch((error) =>{
+                if (error.response) {
+                    const passwordInvalidDiv = document.getElementById("passwordInvalidDiv");
+                    let errorMessage = "알수없는 에러가 발생했습니다."
+                    switch (error.response.status) {
+                        case 400:  // Bad Request
+                            errorMessage = error.response.data.message;
+                            break;
+                        default:
+                            errorMessage = '알수없는 에러가 발생했습니다.';
+                    }
+                    passwordInvalidDiv.innerHTML = `<span style="color:red;">${errorMessage}</span>`;
+                }
             })
     }
 
@@ -250,9 +260,11 @@ const Project = () => {
             .catch((error) => {
                 // 에러 처리
                 if (error.response) {
+                    console.log(error.response)
+                    console.log(error.response.data.message)
                     switch (error.response.status) {
                         case 400:  // Bad Request
-                            errorMessageDiv.textContent = error.response.message;
+                            errorMessageDiv.textContent = error.response.data.message;
                             break;
                         default:
                             errorMessageDiv.textContent = '프로젝트 생성 중 오류가 발생했습니다.';
@@ -260,7 +272,7 @@ const Project = () => {
                     errorMessageDiv.style.display = 'block';
                 } else {
                     console.error("Error creating project:", error);
-                    errorMessageDiv.textContent = '네트워크 오류가 발생했습니다.';
+                    errorMessageDiv.textContent = '알수없는 에러가 발생했습니다.';
                     errorMessageDiv.style.display = 'block';
                 }
             });

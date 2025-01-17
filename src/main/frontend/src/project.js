@@ -38,6 +38,9 @@ const Project = () => {
   const [userId, setUserId] = useState(null);
   const location = useLocation();
   const {presentationId} = location.state || {};
+
+  const [notJoinedRoomPage, setNotJoinedRoomPage] = useState(1)
+
   // ====================================================
   const [rooms, setRooms] = useState({num: 0, roomList: []});
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태 추가
@@ -62,7 +65,7 @@ const Project = () => {
       const searchTitle = searchRoomsTitle !== undefined ? searchRoomsTitle : ""
       fetchRooms(page,searchRoomsTitle,true)
           .then((result) => {
-              console.log(result)
+              setCurrentPage(page)
               setRooms(result)
           })
           .catch((error) => {
@@ -71,9 +74,13 @@ const Project = () => {
   }
 
   const setNonParticipationRoom = (page) => {
+      if(!searchExcludedRoomsTitle || searchExcludedRoomsTitle === undefined){
+          return
+      }
       fetchRooms(page,searchExcludedRoomsTitle,false)
           .then((result) => {
-              setRooms(result)
+              setNotJoinedRoomPage(page)
+              setNotJoinedRooms(result)
           })
           .catch((error) => {
               console.error("Error fetching results:", error);
@@ -267,6 +274,7 @@ const Project = () => {
 
   const closeSearchModal = () => {
     setPage(0);
+    setSearchExcludedRoomsTitle("")
     setSearchModal(false);
     setNotJoinedRooms({num:0, rooms: []});
   }
@@ -362,7 +370,7 @@ const Project = () => {
                                         <button className="create_button" type="submit" onClick={() => setCreateModal(true)}>
                                             생성
                                         </button>
-                                        <button className="create_button" type="click">
+                                        <button className="create_button" type="click" onClick={() => setSearchModal(true)}>
                                             참가
                                         </button>
                                     </div>
@@ -410,7 +418,7 @@ const Project = () => {
                                         })}
                                     </div>
                                     <div id="paginationButtonGroup" className="pagination-container">
-                                        <button className="pagination-button" onClick={() => fetchRooms(rooms.firstPage - 1)}
+                                        <button className="pagination-button" onClick={() => setParticipationRoom(rooms.firstPage - 1)}
                                                 disabled={currentPage === rooms.firstPage - 1}>
                                             맨 처음
                                         </button>
@@ -420,13 +428,13 @@ const Project = () => {
                                                 {length: rooms.lastPage - rooms.firstPage + 1},
                                                 (_, i) => rooms.firstPage + i
                                             ).map((page) => (
-                                                <button className="pagination-button" onClick={() => fetchRooms(page - 1)}
+                                                <button className="pagination-button" onClick={() => setParticipationRoom(page - 1)}
                                                         disabled={currentPage === page - 1}>
                                                     {page}
                                                 </button>
                                             ))}
                                         </div>
-                                        <button onClick={() => fetchRooms(rooms.lastPage - 1)} className="pagination-button"
+                                        <button onClick={() => setParticipationRoom(rooms.lastPage - 1)} className="pagination-button"
                                                 disabled={currentPage === rooms.lastPage - 1}>
                                             마지막
                                         </button>
@@ -448,11 +456,28 @@ const Project = () => {
                 {searchModal && (
                             <div className="add_project_container">
                                 <div className="modal_overlay" onClick={closeSearchModal}>
-                                    <div className="project_modal_content" onClick={(e)=> e.stopPropagation()}>
+                                    <div className="search_modal_content" onClick={(e)=> e.stopPropagation()}>
+                                        <h2 style={{textAlign : "center"}}>참여할 방 찾기</h2>
                                         <button className="close_button" onClick={() => closeSearchModal()}>
                                             X
                                         </button>
-                                        <div className="room_grid scrollbar">
+                                        <div className="search_modal_search_box">
+                                            <input
+                                                className="friend_search_txt"
+                                                type="text"
+                                                placeholder="참여할 방 제목을 입력하세요."
+                                                value={searchExcludedRoomsTitle}
+                                                onChange={e => setSearchExcludedRoomsTitle(e.target.value)}
+                                            />
+                                            <button
+                                                className="search_button"
+                                                type="submit"
+                                                onClick={() => setNonParticipationRoom(0)}
+                                            >
+                                                <img src={searchIcon} alt="검색"/>
+                                            </button>
+                                        </div>
+                                        <div className="scrollbar">
                                             {notJoinedRooms.num > 0 ? (
                                                 <>
                                                     <div className="card-container">
@@ -473,23 +498,35 @@ const Project = () => {
                                                                         <h3 className="card-title">{room.topic}</h3>
                                                                         <button className="card-button"
                                                                                 onClick={() => enterRoom(room.roomId, room.title)}>
-                                                                            참여하기
+                                                                            참여
                                                                         </button>
                                                                     </div>
                                                                 </div>
                                                             );
                                                         })}
                                                     </div>
-                                                    {/*<div style={{textAlign: 'center'}} className="pagination-container">*/}
-                                                    {/*    <button onClick={handlePrevPage} className="pagination-button"*/}
-                                                    {/*            disabled={page === 0}>*/}
-                                                    {/*        이전*/}
-                                                    {/*    </button>*/}
-                                                    {/*    <button onClick={handleNextPage} className="pagination-button"*/}
-                                                    {/*            disabled={roomData.last}>*/}
-                                                    {/*        다음*/}
-                                                    {/*    </button>*/}
-                                                    {/*</div>*/}
+                                                    <div id="paginationButtonGroup" className="pagination-container">
+                                                        <button className="pagination-button" onClick={() => setNonParticipationRoom(notJoinedRooms.firstPage - 1)}
+                                                                disabled={notJoinedRoomPage === notJoinedRooms.firstPage - 1}>
+                                                            맨 처음
+                                                        </button>
+                                                        <div id="paginationButtonGroup" className="pagination-container">
+                                                            {/* 여기서 firstPage부터 lastPage까지 버튼 생성 */}
+                                                            {Array.from(
+                                                                {length: notJoinedRooms.lastPage - notJoinedRooms.firstPage + 1},
+                                                                (_, i) => notJoinedRooms.firstPage + i
+                                                            ).map((page) => (
+                                                                <button className="pagination-button" onClick={() => setNonParticipationRoom(page - 1)}
+                                                                        disabled={notJoinedRoomPage === page - 1}>
+                                                                    {page}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        <button onClick={() => setNonParticipationRoom(notJoinedRooms.lastPage - 1)} className="pagination-button"
+                                                                disabled={notJoinedRoomPage === notJoinedRooms.lastPage - 1}>
+                                                            마지막
+                                                        </button>
+                                                    </div>
                                                 </>
                                             ) : <h2 style={{textAlign: "center"}} id="notExistProjectH">
                                                 검색한 프로젝트가 존재하지 않습니다.</h2>}

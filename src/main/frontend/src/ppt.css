@@ -162,6 +162,19 @@
   position: relative;
 }
 
+.sync-ppt-btn{
+  background-color: #d1f7f7; /* PPT 버튼 색상 */
+  padding: 8px 12px;
+  color: #333333; /* 버튼 텍스트는 가독성을 위한 짙은 회색 */
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  position: relative;
+}
+
 .register-btn{
   background-color: #ffd3b4;
   padding: 8px 12px;

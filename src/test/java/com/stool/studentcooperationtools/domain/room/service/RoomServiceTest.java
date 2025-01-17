@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -105,6 +106,38 @@ class RoomServiceTest extends IntegrationTest {
         RoomAddResponse roomAddResponse = roomService.addRoom(member, request);
         //then
         assertThat(roomAddResponse.getTitle()).isEqualTo("room");
+    }
+
+
+    @Test
+    @DisplayName("팀원을 추가하고 방 생성")
+    void addRoomWithParticipant() {
+        //given
+        Member user = Member.builder()
+                .role(Role.USER)
+                .email("email")
+                .profile("profile")
+                .nickName("nickName")
+                .build();
+        memberRepository.save(user);
+        SessionMember member = SessionMember.of(user);
+        Member friend = Member.builder()
+                .role(Role.USER)
+                .email("friend")
+                .profile("friend")
+                .nickName("friend")
+                .build();
+        memberRepository.save(friend);
+        RoomAddRequest request = RoomAddRequest.builder()
+                .title("room")
+                .participation(List.of(friend.getId()))
+                .password("1234")
+                .build();
+        //when
+        RoomAddResponse roomAddResponse = roomService.addRoom(member, request);
+        //then
+        assertThat(roomAddResponse.getTitle()).isEqualTo("room");
+        assertThat(roomRepository.findAll().get(0).getParticipationNum()).isEqualTo(2);
     }
 
     @Test

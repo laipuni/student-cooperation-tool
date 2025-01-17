@@ -49,4 +49,8 @@ public class Slide extends BaseTimeEntity {
     public void updateIndex(int index) {
         this.slide_idx = index;
     }
+
+    public void updateThumbnail(String thumbnail){
+        this.thumbnail = thumbnail;
+    }
 }

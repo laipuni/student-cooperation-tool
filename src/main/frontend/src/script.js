@@ -295,7 +295,9 @@ const Script = () => {
                           </button>
                       </div>
                       {/* 새로고침 버튼 */}
-                      {presentationId && <button className="refresh-btn" onClick={refreshSlides}>🔄</button>}
+                      {presentationId && (!isLoading ?
+                          <button className="refresh-btn" onClick={refreshSlides}>🔄</button>
+                          :<div className="script-spinner"></div> )}
                   </div>
               </div>
           </div>
@@ -323,12 +325,6 @@ const Script = () => {
                   발표 준비
               </div>
           </div>
-          {isLoading && (
-              <div className="loading-overlay">
-                  <div className="spinner"></div>
-                  <p>Loading...</p>
-              </div>
-          )}
       </div>
   );
 };

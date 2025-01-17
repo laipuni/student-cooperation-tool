@@ -35,4 +35,11 @@ public class SlideApiController {
         String firstPage = slideService.findFirstPage(presentationId);
         return ApiResponse.of(HttpStatus.OK,firstPage);
     }
+
+    @PostMapping("/api/v1/presentation/{presentationId}/slides-sync")
+    public ApiResponse<Boolean> syncSlides(@PathVariable("presentationId") Long presentationId, SessionMember member) {
+        Credential credential = credentialProvider.getCredential();
+        boolean result = slideService.syncSlides(presentationId, credential);
+        return ApiResponse.of(HttpStatus.OK,result);
+    }
 }

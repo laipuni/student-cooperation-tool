@@ -5,6 +5,7 @@ import com.stool.studentcooperationtools.domain.friendship.repository.Friendship
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberSearchMemberDto;
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindMemberDto;
+import com.stool.studentcooperationtools.domain.member.controller.request.FriendRemoveRequest;
 import com.stool.studentcooperationtools.domain.member.repository.MemberRepository;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberAddRequest;
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindResponse;
@@ -49,6 +50,16 @@ public class MemberService {
         Member friend = memberRepository.findById(request.getFriendId())
                 .orElseThrow(() -> new IllegalArgumentException("친구 추가할 유저가 존재하지 않습니다."));
         friendshipRepository.save(Friendship.of(user, friend));
+        return true;
+    }
+
+    @Transactional
+    public Boolean removeFriend(SessionMember member, final FriendRemoveRequest request){
+        Member user = memberRepository.findById(member.getMemberSeq())
+                .orElseThrow(()->new IllegalArgumentException("등록되지 않은 유저 정보입니다."));
+        Member friend = memberRepository.findMemberByEmail(request.getEmail())
+                .orElseThrow(()->new IllegalArgumentException("등록되지 않은 친구 정보입니다."));
+        friendshipRepository.deleteByFriendId(user.getId(), friend.getId());
         return true;
     }
 }

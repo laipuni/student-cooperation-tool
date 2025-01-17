@@ -155,7 +155,6 @@ function ChatRoom() {
             userId: frame.memberId,
         };
         setChatList((prev) => [...prev, newMessage]);
-        setInputMessage("");
         if (newMessage.userId === userId) {
             setScrollDown((prev) => !prev);
         } else {
@@ -179,6 +178,7 @@ function ChatRoom() {
             destination: '/pub/chats/add',
             body: JSON.stringify(data)
         })
+        setInputMessage("");
     }
 
     const handleKeyPress = (e) => {

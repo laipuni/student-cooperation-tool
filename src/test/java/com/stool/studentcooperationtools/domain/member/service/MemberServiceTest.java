@@ -5,6 +5,7 @@ import com.stool.studentcooperationtools.domain.friendship.Friendship;
 import com.stool.studentcooperationtools.domain.friendship.repository.FriendshipRepository;
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.Role;
+import com.stool.studentcooperationtools.domain.member.controller.request.FriendRemoveRequest;
 import com.stool.studentcooperationtools.domain.member.controller.request.MemberAddRequest;
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberFindResponse;
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberSearchResponse;
@@ -256,5 +257,33 @@ class MemberServiceTest extends IntegrationTest {
         //when
         //then
         assertThrows(IllegalArgumentException.class, () -> memberService.addFriend(sessionMember, request));
+    }
+
+    @Test
+    @DisplayName("친구 삭제")
+    void removeFriend(){
+        //given
+        Member user = Member.builder()
+                .profile("profile")
+                .email("email")
+                .nickName("nickName")
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user);
+        Member friend = Member.builder()
+                .profile("A")
+                .email("A")
+                .nickName("A")
+                .role(Role.USER)
+                .build();
+        memberRepository.save(friend);
+        friendshipRepository.save(Friendship.of(user, friend));
+        FriendRemoveRequest request = FriendRemoveRequest.builder()
+                .email(friend.getEmail())
+                .build();
+        //when
+        memberService.removeFriend(SessionMember.of(user), request);
+        //then
+        assertThat(memberRepository.findFriendsByMemberId(user.getId()).size()).isEqualTo(0);
     }
 }

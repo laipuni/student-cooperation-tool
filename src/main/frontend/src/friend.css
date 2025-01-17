@@ -480,3 +480,19 @@ ul {
 .enter_button:hover {
     background-color: #D48A78;
 }
+
+.delete-friend-button{
+    background-color: #ec9681;
+    padding: 10px;
+    border: none;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    display: block;
+    margin-bottom: auto;
+}
+
+.delete-friend-button:hover {
+    background-color: #c75436;
+}

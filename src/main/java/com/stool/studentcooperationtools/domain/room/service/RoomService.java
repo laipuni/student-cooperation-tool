@@ -37,12 +37,7 @@ public class RoomService {
     public RoomAddResponse addRoom(SessionMember member, final RoomAddRequest request) {
         Member user = memberRepository.findById(member.getMemberSeq())
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보가 등록되어 있지 않습니다"));
-        Room room = Room.builder()
-                .password(request.getPassword())
-                .participationNum(request.getParticipation().size())
-                .title(request.getTitle())
-                .leader(user)
-                .build();
+        Room room = Room.of(request, user);
         try {
             roomRepository.save(room);
         } catch (DataIntegrityViolationException e){

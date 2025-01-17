@@ -3,6 +3,7 @@ package com.stool.studentcooperationtools.domain.room;
 import com.stool.studentcooperationtools.domain.BaseTimeEntity;
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.participation.Participation;
+import com.stool.studentcooperationtools.domain.room.controller.request.RoomAddRequest;
 import com.stool.studentcooperationtools.domain.topic.Topic;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -46,6 +47,15 @@ public class Room extends BaseTimeEntity {
         this.password = password;
         this.participationNum = participationNum;
         this.leader = leader;
+    }
+
+    public static Room of(final RoomAddRequest request, final Member leader) {
+        return Room.builder()
+                .leader(leader)
+                .password(request.getPassword())
+                .title(request.getTitle())
+                .participationNum(0)
+                .build();
     }
 
     public String getTopic(){

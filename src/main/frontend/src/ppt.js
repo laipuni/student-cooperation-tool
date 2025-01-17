@@ -161,6 +161,19 @@ const PPT = () => {
         }
     };
 
+    const syncPPT= () => {
+        setIsLoading(true);
+        axios.post(domain+`/api/v1/presentation/${pptData.presentationId}/slides-sync`)
+            .then(()=>{
+                fetchMainThumbnail();
+                setIsLoading(false);
+            })
+            .catch((e)=>{
+                setIsLoading(false);
+                alert(e.message);
+            })
+    }
+
     useEffect(() => {
         if(isValid) {
             const payload = {
@@ -273,15 +286,17 @@ const PPT = () => {
                             }}
                         />
                             {!isLeader &&
-                            <div className="bookmark-buttons">
-                                <button className="download-pdf-btn" onClick={downloadPDF}>PDF로 다운로드</button>
-                                <button className="download-ppt-btn" onClick={downloadPPT}>PPT로 다운로드</button>
-                            </div>
+                                <div className="bookmark-buttons">
+                                    <button className="download-ppt-btn" onClick={downloadPPT}>PPT로 다운로드</button>
+                                    <button className="download-pdf-btn" onClick={downloadPDF}>PDF로 다운로드</button>
+                                    <button className="sync-ppt-btn" onClick={syncPPT}>썸네일 새로고침</button>
+                                </div>
                             }
-                            {isLeader && (
-                                <div className="bookmark-buttons-leader">
+                        {isLeader && (
+                            <div className="bookmark-buttons-leader">
                                     <button className="download-pdf-btn" onClick={downloadPDF}>PDF로 다운로드</button>
                                     <button className="download-ppt-btn" onClick={downloadPPT}>PPT로 다운로드</button>
+                                    <button className="sync-ppt-btn" onClick={syncPPT}>썸네일 새로고침</button>
                                     <button className="create-ppt-after-btn" onClick={() => setPPTModal(true)}>새 슬라이드 생성
                                     </button>
                                     <button className="edit-ppt-after-btn" onClick={() => setEditModal(true)}>기존 슬라이드 등록
@@ -289,7 +304,7 @@ const PPT = () => {
                                 </div>
                             )}
                     </div>
-                    )}
+                )}
             </div>
 
             {isLoading && (

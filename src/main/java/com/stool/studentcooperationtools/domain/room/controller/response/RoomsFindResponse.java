@@ -44,7 +44,7 @@ public class RoomsFindResponse {
 
     public static RoomsFindResponse of(final Page<RoomFindDto> paginationResult) {
         int startPage = getRoomPagingStartPage(paginationResult.getNumber());
-        int endPage = getRoomPagingLastPage(startPage,paginationResult.getTotalPages());
+        int endPage = getEndPage(startPage,paginationResult.getTotalPages());
 
         return RoomsFindResponse.builder()
                 .num(paginationResult.getContent().size())

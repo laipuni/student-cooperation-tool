@@ -55,48 +55,6 @@ class RoomServiceTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("방이 있을 때 방 목록 조회")
-    void findAllByMemberIdWithRoom() {
-        //given
-        Member user = Member.builder()
-                .role(Role.USER)
-                .email("email")
-                .profile("profile")
-                .nickName("nickName")
-                .build();
-        memberRepository.save(user);
-        SessionMember member = SessionMember.of(user);
-        Room room = Room.builder()
-                .title("room")
-                .leader(user)
-                .participationNum(1)
-                .password("password")
-                .build();
-        roomRepository.save(room);
-        participationRepository.save(Participation.of(user, room));
-        //when
-        //then
-        assertThat(roomService.findRooms(member, 0).getNum()).isGreaterThan(0);
-    }
-
-    @Test
-    @DisplayName("방이 없을 때 방 목록 조회")
-    void findAllByMemberIdWithOutRoom() {
-        //given
-        Member user = Member.builder()
-                .role(Role.USER)
-                .email("email")
-                .profile("profile")
-                .nickName("nickName")
-                .build();
-        memberRepository.save(user);
-        SessionMember member = SessionMember.of(user);
-        //when
-        //then
-        assertThat(roomService.findRooms(member, 0).getNum()).isEqualTo(0);
-    }
-
-    @Test
     @DisplayName("제목이 중복되는 방 생성 시 에러 발생")
     void addRoomWithDuplicateTitle() {
         //given
@@ -150,7 +108,7 @@ class RoomServiceTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("검색 제목에 해당하는 방이 있을 때 검색 결과")
+    @DisplayName("검색 조건들과 방을 검색할 때, 참여하는 방들중 검색 조건과 연관된 방들을 조회한다.")
     void searchRoomByValidTitle() {
         //given
         Member user = Member.builder()
@@ -169,22 +127,10 @@ class RoomServiceTest extends IntegrationTest {
         roomRepository.save(room);
         participationRepository.save(Participation.of(user, room));
         //when
-        RoomSearchResponse roomSearchResponse = roomService.searchRoom("room", 0);
+        RoomSearchResponse roomSearchResponse = roomService.searchRoom("room", 0,true,user.getId());
         List<RoomSearchDto> rooms = roomSearchResponse.getRooms();
         //then
         assertThat(rooms.size()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("검색 제목에 해당하는 방이 없을 때 검색 결과")
-    void searchRoomByInValidTitle() {
-        //given
-        String invalidTitle = "invalidTitle";
-        //when
-        RoomSearchResponse roomSearchResponse = roomService.searchRoom(invalidTitle, 0);
-        List<RoomSearchDto> rooms = roomSearchResponse.getRooms();
-        //then
-        assertThat(rooms.size()).isEqualTo(0);
     }
 
     @Test

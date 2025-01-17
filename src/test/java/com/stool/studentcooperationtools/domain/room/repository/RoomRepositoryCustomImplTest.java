@@ -8,7 +8,6 @@ import com.stool.studentcooperationtools.domain.participation.Participation;
 import com.stool.studentcooperationtools.domain.participation.repository.ParticipationRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomsFindResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,7 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
 
     @Test
     @DisplayName("참여중인 방을 페이지당 5개씩 조회할 때, 첫번째 페이지를 조회한다.")
-    void findAllByMemberIdWithRoom() {
+    void searchRoomByNotExistTitleAndExistParticipation() {
         //given
         Member member = Member.builder()
                 .role(Role.USER)
@@ -56,19 +55,17 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
             participationRepository.save(participation);
         }
 
-        List<Room> rooms = roomRepository.findAll();
-
         //when
-        RoomsFindResponse result = roomRepository.findRoomsByMemberIdWithPagination(member.getId(), 0);
+        RoomSearchResponse result = roomRepository.searchRoomsBy("", 0, true, member.getId());
         //then
         assertThat(result).extracting("num","totalPage","firstPage","lastPage")
-                        .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,5);
+                        .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,2);
         assertThat(result.getRooms()).hasSize(5);
     }
 
     @Test
-    @DisplayName("참여한 방을 검색할 때, 검색어와 같은 방의 첫 페이지를 조회하고 다음 페이지가 존재한다.")
-    void findRoomsWithParticipation() {
+    @DisplayName("참여하지 않는 방을 검색할 때, 검색어와 같은 방의 첫 페이지를 조회하고 다음 페이지가 존재한다.")
+    void searchRoomByExistTitleAndExistParticipation() {
         //given
         Member member = Member.builder()
                 .role(Role.USER)
@@ -91,21 +88,20 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
             participationRepository.save(participation);
         }
 
-
         //when
-        RoomSearchResponse result = roomRepository.findRooms(
+        RoomSearchResponse result = roomRepository.searchRoomsBy(
                 searchTitle, 0,
                 true, member.getId()
         );
         //then
-        assertThat(result.isLast()).isFalse();
-        assertThat(result.getNum()).isEqualTo(titleList.size());
-        assertThat(result.getRooms()).hasSize(titleList.size());
+        assertThat(result).extracting("num","totalPage","firstPage","lastPage")
+                .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,2);
+        assertThat(result.getRooms()).hasSize(5);
     }
 
     @Test
     @DisplayName("참여한 방을 검색할 때, 검색어와 같은 방의 첫 페이지를 조회하고 다음 페이지가 존재한다.")
-    void findRoomsWithNotParticipation() {
+    void searchRoomByExistTitleAndNotExistParticipation() {
         //given
         Member leader = Member.builder()
                 .role(Role.USER)
@@ -135,14 +131,14 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
         }
 
         //when
-        RoomSearchResponse result = roomRepository.findRooms(
+        RoomSearchResponse result = roomRepository.searchRoomsBy(
                 searchTitle, 0,
                 false, member.getId()
         );
         //then
-        assertThat(result.isLast()).isFalse();
-        assertThat(result.getNum()).isEqualTo(titleList.size());
-        assertThat(result.getRooms()).hasSize(titleList.size());
+        assertThat(result).extracting("num","totalPage","firstPage","lastPage")
+                .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,2);
+        assertThat(result.getRooms()).hasSize(5);
     }
 
     private static Room createRoom(final String title,final Member member) {

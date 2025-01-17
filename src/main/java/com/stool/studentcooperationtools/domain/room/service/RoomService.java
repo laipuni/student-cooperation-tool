@@ -1,6 +1,5 @@
 package com.stool.studentcooperationtools.domain.room.service;
 
-import com.stool.studentcooperationtools.domain.PagingUtils;
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.repository.MemberRepository;
 import com.stool.studentcooperationtools.domain.participation.Participation;
@@ -9,15 +8,14 @@ import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.controller.request.RoomAddRequest;
 import com.stool.studentcooperationtools.domain.room.controller.request.RoomEnterRequest;
 import com.stool.studentcooperationtools.domain.room.controller.request.RoomTopicUpdateRequest;
-import com.stool.studentcooperationtools.domain.room.controller.response.*;
+import com.stool.studentcooperationtools.domain.room.controller.response.RoomAddResponse;
+import com.stool.studentcooperationtools.domain.room.controller.response.RoomEnterResponse;
+import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +32,6 @@ public class RoomService {
     private final MemberRepository memberRepository;
     private final TopicRepository topicRepository;
     private final ParticipationRepository participationRepository;
-
-    public RoomsFindResponse findRooms(SessionMember member, final int page) {
-        return roomRepository.findRoomsByMemberIdWithPagination(member.getMemberSeq(), page);
-    }
 
     @Transactional
     public RoomAddResponse addRoom(SessionMember member, final RoomAddRequest request) {
@@ -66,17 +60,11 @@ public class RoomService {
                 .build();
     }
 
-    public RoomSearchResponse searchRoom(final String title, final int page) {
-        Pageable pageable = PageRequest.of(page, PagingUtils.ROOM_PAGING_PARSE);
-        Page<Room> rooms = roomRepository.findRoomsByTitleWithPage(title, pageable);
-        return RoomSearchResponse.of(rooms.isLast(),rooms.getContent());
-    }
-
     public RoomSearchResponse searchRoom(
             final String title, final int page,
             final boolean isParticipation, final Long memberId
     ) {
-        return roomRepository.findRooms(title, page, isParticipation,memberId);
+        return roomRepository.searchRoomsBy(title, page, isParticipation,memberId);
     }
 
     @Transactional

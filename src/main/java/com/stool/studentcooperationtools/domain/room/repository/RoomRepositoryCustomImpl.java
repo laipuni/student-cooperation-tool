@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -26,38 +27,7 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom{
     }
 
     @Override
-    public RoomsFindResponse findRoomsByMemberIdWithPagination(final Long memberId, final int page) {
-        List<RoomFindDto> result = queryFactory.select(
-                        new QRoomFindDto(
-                                room.id,
-                                room.title,
-                                room.mainTopic.topic,
-                                room.participationNum
-                        )
-                )
-                .from(room)
-                .leftJoin(room.mainTopic)
-                .where(room.leader.id.eq(memberId))
-                .orderBy(room.title.desc(), room.id.desc())
-                .offset(page)
-                .limit(ROOM_PAGE_SIZE)
-                .fetch();
-
-        JPAQuery<Long> countQuery = queryFactory.select(room.count())
-                .from(room)
-                .where(room.leader.id.eq(memberId));
-
-        PageRequest pageRequest = PageRequest.of(page, ROOM_PAGE_SIZE);
-
-        Page<RoomFindDto> paginationResult = PageableExecutionUtils.getPage(
-                result, pageRequest, countQuery::fetchOne
-        );
-
-        return RoomsFindResponse.of(paginationResult);
-    }
-
-    @Override
-    public RoomSearchResponse findRooms(final String title, final int page, final boolean isParticipation, final Long memberId) {
+    public RoomSearchResponse searchRoomsBy(final String title, final int page, final boolean isParticipation, final Long memberId) {
         List<RoomSearchDto> result = queryFactory.select(
                         new QRoomSearchDto(
                                 room.id,
@@ -71,20 +41,44 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom{
                 .leftJoin(participation)
                 .on(participation.member.id.eq(memberId).and(participation.room.id.eq(room.id)))
                 .where(
-                        room.title.contains(title),
-                        filterBy(isParticipation)
+                        filterBy(isParticipation,title)
                 )
                 .orderBy(room.title.desc(),room.id.desc())
                 .offset(page)
-                .limit(ROOM_PAGE_SIZE + 1)
+                .limit(ROOM_PAGE_SIZE)
                 .fetch();
 
-        boolean isLast = result.size() <= ROOM_PAGE_SIZE;
+        JPAQuery<Long> countQuery = queryFactory.select(room.count())
+                .from(room)
+                .leftJoin(participation)
+                .on(participation.member.id.eq(memberId).and(participation.room.id.eq(room.id)))
+                .where(
+                        filterBy(isParticipation,title)
+                );
 
-        return RoomSearchResponse.of(isLast,result,null);
+        PageRequest pageRequest = PageRequest.of(page, ROOM_PAGE_SIZE);
+
+        Page<RoomSearchDto> paginationResult = PageableExecutionUtils.getPage(
+                result, pageRequest, countQuery::fetchOne
+        );
+
+        return RoomSearchResponse.of(paginationResult);
     }
 
-    private BooleanBuilder filterBy(final boolean isParticipation){
+    private BooleanBuilder filterBy(final boolean isParticipation,final String title){
+        return filterWithParticipation(isParticipation)
+                .and(filterWithTitle(title));
+    }
+
+    private static BooleanBuilder filterWithTitle(final String title){
+        if(StringUtils.hasText(title)){
+            return new BooleanBuilder(room.title.contains(title));
+        } else{
+            return new BooleanBuilder();
+        }
+    }
+
+    private static BooleanBuilder filterWithParticipation(final boolean isParticipation) {
         if(isParticipation){
             return new BooleanBuilder(participation.isNotNull());
         } else{

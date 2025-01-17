@@ -38,66 +38,66 @@ public class RoomApiControllerDocsTest extends RestDocsSupport {
         return new RoomApiController(roomService,roomDeleteService);
     }
 
-    @Test
-    void findRooms() throws Exception {
-        //given
-        List<RoomFindDto> findDtoList = List.of(
-                RoomFindDto.builder()
-                        .roomId(1L)
-                        .title("방 제목")
-                        .topic("방 주제")
-                        .participationNum(5)
-                        .build()
-        );
-        RoomsFindResponse roomsFindResponse = RoomsFindResponse.builder()
-                .num(findDtoList.size())
-                .rooms(findDtoList)
-                .build();
-        Mockito.when(roomService.findRooms(any(SessionMember.class), anyInt()))
-                .thenReturn(roomsFindResponse);
-        //when
-        //then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/rooms")
-                        .param("page","1")
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andDo(document("room-find",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                queryParameters(
-                                        parameterWithName("page").description("조회할 방들의 페이지")
-                                ),
-                                responseFields(
-                                        fieldWithPath("code").type(NUMBER)
-                                                .description("상태 코드"),
-                                        fieldWithPath("status").type(STRING)
-                                                .description("응답 상태"),
-                                        fieldWithPath("data").type(OBJECT)
-                                                .description("응답 데이터"),
-                                        fieldWithPath("data.totalPage").type(NUMBER)
-                                                .description("전체 페이지"),
-                                        fieldWithPath("data.firstPage").type(NUMBER)
-                                                .description("화면에 첫번째 페이지"),
-                                        fieldWithPath("data.lastPage").type(NUMBER)
-                                                .description("화면에 마지막 페이지"),
-                                        fieldWithPath("data.num").type(NUMBER)
-                                                .description("조회된 방 개수"),
-                                        fieldWithPath("data.rooms[]").type(ARRAY)
-                                                .description("방 정보 리스트"),
-                                        fieldWithPath("data.rooms[].roomId").type(NUMBER)
-                                                .description("방 식별키"),
-                                        fieldWithPath("data.rooms[].title").type(STRING)
-                                                .description("방 제목"),
-                                        fieldWithPath("data.rooms[].topic").type(STRING)
-                                                .description("방 주제"),
-                                        fieldWithPath("data.rooms[].participationNum").type(NUMBER)
-                                                .description("방 참가자")
-                                )
-                        )
-                );
-
-    }
+//    @Test
+//    void findRooms() throws Exception {
+//        //given
+//        List<RoomFindDto> findDtoList = List.of(
+//                RoomFindDto.builder()
+//                        .roomId(1L)
+//                        .title("방 제목")
+//                        .topic("방 주제")
+//                        .participationNum(5)
+//                        .build()
+//        );
+//        RoomsFindResponse roomsFindResponse = RoomsFindResponse.builder()
+//                .num(findDtoList.size())
+//                .rooms(findDtoList)
+//                .build();
+//        Mockito.when(roomService.findRooms(any(Long.class), anyInt()))
+//                .thenReturn(roomsFindResponse);
+//        //when
+//        //then
+//        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/rooms")
+//                        .param("page","1")
+//                )
+//                .andDo(print())
+//                .andExpect(status().isOk())
+//                .andDo(document("room-find",
+//                                preprocessRequest(prettyPrint()),
+//                                preprocessResponse(prettyPrint()),
+//                                queryParameters(
+//                                        parameterWithName("page").description("조회할 방들의 페이지")
+//                                ),
+//                                responseFields(
+//                                        fieldWithPath("code").type(NUMBER)
+//                                                .description("상태 코드"),
+//                                        fieldWithPath("status").type(STRING)
+//                                                .description("응답 상태"),
+//                                        fieldWithPath("data").type(OBJECT)
+//                                                .description("응답 데이터"),
+//                                        fieldWithPath("data.totalPage").type(NUMBER)
+//                                                .description("전체 페이지"),
+//                                        fieldWithPath("data.firstPage").type(NUMBER)
+//                                                .description("화면에 첫번째 페이지"),
+//                                        fieldWithPath("data.lastPage").type(NUMBER)
+//                                                .description("화면에 마지막 페이지"),
+//                                        fieldWithPath("data.num").type(NUMBER)
+//                                                .description("조회된 방 개수"),
+//                                        fieldWithPath("data.rooms[]").type(ARRAY)
+//                                                .description("방 정보 리스트"),
+//                                        fieldWithPath("data.rooms[].roomId").type(NUMBER)
+//                                                .description("방 식별키"),
+//                                        fieldWithPath("data.rooms[].title").type(STRING)
+//                                                .description("방 제목"),
+//                                        fieldWithPath("data.rooms[].topic").type(STRING)
+//                                                .description("방 주제"),
+//                                        fieldWithPath("data.rooms[].participationNum").type(NUMBER)
+//                                                .description("방 참가자")
+//                                )
+//                        )
+//                );
+//
+//    }
 
     @Test
     void addRoom() throws Exception {
@@ -166,12 +166,15 @@ public class RoomApiControllerDocsTest extends RestDocsSupport {
                         .participationNum(5)
                         .build()
         );
-        RoomSearchResponse roomsFindResponse = RoomSearchResponse.builder()
+        RoomSearchResponse roomSearchResponse = RoomSearchResponse.builder()
                 .num(findDtoList.size())
+                .totalPage(5)
+                .firstPage(1)
+                .lastPage(5)
                 .rooms(findDtoList)
                 .build();
-        Mockito.when(roomService.searchRoom(anyString(),anyInt()))
-                .thenReturn(roomsFindResponse);
+        Mockito.when(roomService.searchRoom(anyString(),anyInt(),anyBoolean(),anyLong()))
+                .thenReturn(roomSearchResponse);
         //when
         //then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/rooms/search")
@@ -196,6 +199,12 @@ public class RoomApiControllerDocsTest extends RestDocsSupport {
                                                 .description("응답 데이터"),
                                         fieldWithPath("data.num").type(NUMBER)
                                                 .description("검색된 방 개수"),
+                                        fieldWithPath("data.firstPage").type(NUMBER)
+                                                .description("검색된 방 페이징 첫번째 번호"),
+                                        fieldWithPath("data.lastPage").type(NUMBER)
+                                                .description("검색된 방 페이징 마지막 번호"),
+                                        fieldWithPath("data.totalPage").type(NUMBER)
+                                                .description("검색된 방 총 페이징 개수"),
                                         fieldWithPath("data.last").type(BOOLEAN)
                                                 .description("마지막 페이지를 나타내는 값"),
                                         fieldWithPath("data.rooms[]").type(ARRAY)

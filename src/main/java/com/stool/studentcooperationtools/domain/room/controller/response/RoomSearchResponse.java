@@ -1,43 +1,43 @@
 package com.stool.studentcooperationtools.domain.room.controller.response;
 
-import com.stool.studentcooperationtools.domain.room.Room;
-import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
+
+import static com.stool.studentcooperationtools.domain.PagingUtils.getEndPage;
+import static com.stool.studentcooperationtools.domain.PagingUtils.getRoomPagingStartPage;
 
 @Getter
 public class RoomSearchResponse {
 
     private int num;
-    private boolean isLast;
+    private int totalPage;
+    private int firstPage;
+    private int lastPage;
     private List<RoomSearchDto> rooms;
 
     @Builder
-    private RoomSearchResponse(final int num, final boolean isLast, final List<RoomSearchDto> rooms) {
+    private RoomSearchResponse(final int num, final int totalPage, final int firstPage, final int lastPage, final List<RoomSearchDto> rooms) {
         this.num = num;
-        this.isLast = isLast;
+        this.firstPage = firstPage;
+        this.lastPage = lastPage;
+        this.totalPage = totalPage;
         this.rooms = rooms;
     }
 
-    public static RoomSearchResponse of(final boolean isLast, final List<Room> rooms){
-        return RoomSearchResponse.builder()
-                .num(rooms.size())
-                .isLast(isLast)
-                .rooms(
-                        rooms.stream()
-                                .map(RoomSearchDto::of)
-                                .toList()
-                )
-                .build();
-    }
 
-    public static RoomSearchResponse of(final boolean isLast, final List<RoomSearchDto> roomDtos, @Nullable final List<Room> rooms) {
+    public static RoomSearchResponse of(final Page<RoomSearchDto> paginationResult) {
+        int startPage = getRoomPagingStartPage(paginationResult.getNumber());
+        int endPage = getEndPage(startPage,paginationResult.getTotalPages());
+
         return RoomSearchResponse.builder()
-                .num(roomDtos.size())
-                .isLast(isLast)
-                .rooms(roomDtos)
+                .num(paginationResult.getContent().size())
+                .firstPage(startPage)
+                .lastPage(endPage)
+                .totalPage(paginationResult.getTotalPages())
+                .rooms(paginationResult.getContent())
                 .build();
     }
 }

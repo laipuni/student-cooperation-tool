@@ -1,6 +1,8 @@
 package com.stool.studentcooperationtools.domain.room.controller.response;
 
+import com.querydsl.core.annotations.QueryProjection;
 import com.stool.studentcooperationtools.domain.room.Room;
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,10 +15,11 @@ public class RoomFindDto {
     private int participationNum;
 
     @Builder
-    private RoomFindDto(final Long roomId,final String title, final String topic, final int participationNum) {
+    @QueryProjection
+    public RoomFindDto(final Long roomId, final String title, @Nullable final String topic, final int participationNum) {
         this.roomId = roomId;
         this.title = title;
-        this.topic = topic;
+        this.topic = (topic != null) ? topic : "미지정";
         this.participationNum = participationNum;
     }
 

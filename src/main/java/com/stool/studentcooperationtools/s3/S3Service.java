@@ -39,7 +39,11 @@ public class S3Service {
         String[] metaData = fileCode.split(",");
         String extension = getExtension(metaData[0]);
         byte[] fileBytes = Base64.getDecoder().decode(metaData[1]);
+        uploadFileToS3(originalFileName, extension, fileBytes, fileNameSet);
+        return fileNameSet;
+    }
 
+    private void uploadFileToS3(final String originalFileName, final String extension, final byte[] fileBytes, final HashMap<String, List<String>> fileNameSet) {
         try {
             File tempFile = File.createTempFile("File","." + extension);
             try(OutputStream outputStream = new FileOutputStream(tempFile)) {
@@ -47,7 +51,7 @@ public class S3Service {
             }
             String fileName = UUID.randomUUID().toString();
             String thumbnailUrl = amazonS3.getUrl(bucketName,fileName).toString();
-            fileNameSet.put(originalFileName,List.of(fileName,extension,thumbnailUrl));
+            fileNameSet.put(originalFileName,List.of(fileName, extension,thumbnailUrl));
             amazonS3.putObject(new PutObjectRequest(bucketName,fileName,tempFile)
                             .withMetadata(new ObjectMetadata(){{
                                 setContentType(FileType.getMimeType(extension));
@@ -57,7 +61,6 @@ public class S3Service {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return fileNameSet;
     }
 
     private static void closeFile(final File tempFile) {

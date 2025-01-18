@@ -1,7 +1,6 @@
 package com.stool.studentcooperationtools.websocket.controller.file;
 
 import com.stool.studentcooperationtools.domain.file.service.FileService;
-import com.stool.studentcooperationtools.s3.S3Service;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.Utils.SimpleMessageSendingUtils;
 import com.stool.studentcooperationtools.websocket.controller.file.request.FileDeleteWebsocketRequest;
@@ -24,7 +23,6 @@ import static com.stool.studentcooperationtools.websocket.WebsocketMessageType.P
 @RequiredArgsConstructor
 public class FileWebsocketController {
 
-    private final S3Service s3Service;
     private final SimpleMessageSendingUtils sendingUtils;
     private final FileService fileService;
 

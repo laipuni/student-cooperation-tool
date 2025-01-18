@@ -71,11 +71,11 @@ public class FileService {
 
     @Transactional(rollbackFor = {AccessDeniedException.class, AmazonServiceException.class})//작업 접근 권한이 없다면 rollback한다.
     public FileDeleteWebsocketResponse deleteFile(final FileDeleteWebsocketRequest request,final SessionMember sessionMember) {
-        s3Service.deleteFile(request.getFileName());
         int result = fileRepository.deleteFileByIdAndLeaderOrOwner(sessionMember.getMemberSeq(),request.getFileId());
         if(result == 0){
             throw new AccessDeniedException("파일을 삭제할 권한이 없습니다.");
         }
+        s3Service.deleteFile(request.getFileName());
         return FileDeleteWebsocketResponse.of(request.getFileId(),request.getPartId());
     }
 }

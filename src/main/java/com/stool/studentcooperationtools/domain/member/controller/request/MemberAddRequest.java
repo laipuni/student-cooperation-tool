@@ -1,6 +1,6 @@
 package com.stool.studentcooperationtools.domain.member.controller.request;
 
-import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MemberAddRequest {
 
-    @Email(message = "올바르지 않은 이메일 형식입니다.")
-    private String email;
+    @NotNull(message = "추가할 친구가 존재하지 않습니다.")
+    private Long friendId;
 
     @Builder
-    private MemberAddRequest(final String email) {
-        this.email = email;
+    private MemberAddRequest(final Long friendId) {
+        this.friendId = friendId;
     }
 }

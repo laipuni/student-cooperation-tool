@@ -241,7 +241,7 @@ footer > a > img:hover {
     display: flex;
     flex-direction: column;
     background-color: #ffffff;
-    justify-content: space-between;
+    justify-content: center;
     height: 60%;
     padding: 15px;
     border-radius: 10px;
@@ -250,8 +250,35 @@ footer > a > img:hover {
     position: relative;
 }
 
+.search_modal_content {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    justify-content: center;
+    align-items: center; /* 자식 요소 중앙 정렬 */
+    height: 60%;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+    width: 40%;
+    position: relative;
+}
+
+.search_modal_search_box {
+    width: 92%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #BCB8B1;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .modal_section {
     display: flex;
+    flex-direction: row;
     justify-content: center;  /* 내용 중앙 정렬 */
     align-items: center;      /* 수직 중앙 정렬 */
     margin-bottom: 30px;      /* 섹션 간 간격 */

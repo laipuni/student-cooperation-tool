@@ -8,7 +8,6 @@ import com.stool.studentcooperationtools.domain.room.controller.request.RoomTopi
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomAddResponse;
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomEnterResponse;
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomsFindResponse;
 import com.stool.studentcooperationtools.domain.room.service.RoomDeleteService;
 import com.stool.studentcooperationtools.domain.room.service.RoomService;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
@@ -24,23 +23,25 @@ public class RoomApiController {
     private final RoomService roomService;
     private final RoomDeleteService roomDeleteService;
 
-    @GetMapping("/api/v1/rooms")
-    public ApiResponse<RoomsFindResponse> findRooms(SessionMember member, @RequestParam("page") int page){
-        RoomsFindResponse response = roomService.findRooms(member, page);
-        return ApiResponse.of(HttpStatus.OK,response);
-    }
-
     @PostMapping("/api/v1/rooms")
     public ApiResponse<RoomAddResponse> addRoom(SessionMember member, @Valid @RequestBody RoomAddRequest request){
         RoomAddResponse response = roomService.addRoom(member, request);
         return ApiResponse.of(HttpStatus.OK,response);
     }
 
-    @GetMapping("/api/v1/rooms/search")
+    @GetMapping("/api/v2/rooms")
     public ApiResponse<RoomSearchResponse> searchRoom(
-            @RequestParam("title") String title,
-            @RequestParam("page") int page){
-        RoomSearchResponse response = roomService.searchRoom(title, page);
+            @RequestParam(value = "isParticipation",defaultValue = "true") boolean isParticipation,
+            @RequestParam(value = "title", defaultValue = "") String title,
+            @RequestParam(value = "page",defaultValue = "0") int page,
+            SessionMember userInfo
+    ){
+        RoomSearchResponse response = roomService.searchRoom(
+                title, page,
+                isParticipation,
+                userInfo.getMemberSeq()
+        );
+
         return ApiResponse.of(HttpStatus.OK,response);
     }
 

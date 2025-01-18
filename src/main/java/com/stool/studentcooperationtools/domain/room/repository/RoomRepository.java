@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 @Repository
-public interface RoomRepository extends JpaRepository<Room, Long> {
+public interface RoomRepository extends JpaRepository<Room, Long>, RoomRepositoryCustom{
     @Query("select r from Room r join Participation p on p.member.id = :memberId and p.room.id = r.id order by r.id desc")
     Page<Room> findRoomsByMemberIdWithPage(@Param("memberId") Long memberId, Pageable pageable);
 

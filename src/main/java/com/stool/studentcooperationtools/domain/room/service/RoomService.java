@@ -1,6 +1,5 @@
 package com.stool.studentcooperationtools.domain.room.service;
 
-import com.stool.studentcooperationtools.domain.PagingUtils;
 import com.stool.studentcooperationtools.domain.member.Member;
 import com.stool.studentcooperationtools.domain.member.repository.MemberRepository;
 import com.stool.studentcooperationtools.domain.participation.Participation;
@@ -12,15 +11,11 @@ import com.stool.studentcooperationtools.domain.room.controller.request.RoomTopi
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomAddResponse;
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomEnterResponse;
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
-import com.stool.studentcooperationtools.domain.room.controller.response.RoomsFindResponse;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,12 +33,6 @@ public class RoomService {
     private final TopicRepository topicRepository;
     private final ParticipationRepository participationRepository;
 
-    public RoomsFindResponse findRooms(SessionMember member, final int page) {
-        Pageable pageable = PageRequest.of(page, PagingUtils.ROOM_PAGING_PARSE);
-        Page<Room> rooms = roomRepository.findRoomsByMemberIdWithPage(member.getMemberSeq(), pageable);
-        return RoomsFindResponse.of(rooms.getTotalElements(), page ,rooms.getTotalPages(), rooms.getContent());
-    }
-
     @Transactional
     public RoomAddResponse addRoom(SessionMember member, final RoomAddRequest request) {
         Member user = memberRepository.findById(member.getMemberSeq())
@@ -52,7 +41,7 @@ public class RoomService {
         try {
             roomRepository.save(room);
         } catch (DataIntegrityViolationException e){
-            throw new DataIntegrityViolationException("방 제목 중복 오류입니다");
+            throw new DataIntegrityViolationException("중복된 방 제목입니다.");
         }
         participationRepository.save(Participation.of(user, room));
         List<Member> memberList = memberRepository.findMembersByMemberIdList(request.getParticipation());
@@ -66,18 +55,19 @@ public class RoomService {
                 .build();
     }
 
-    public RoomSearchResponse searchRoom(final String title, final int page) {
-        Pageable pageable = PageRequest.of(page, PagingUtils.ROOM_PAGING_PARSE);
-        Page<Room> rooms = roomRepository.findRoomsByTitleWithPage(title, pageable);
-        return RoomSearchResponse.of(rooms.isLast(),rooms.getContent());
+    public RoomSearchResponse searchRoom(
+            final String title, final int page,
+            final boolean isParticipation, final Long memberId
+    ) {
+        return roomRepository.searchRoomsBy(title, page, isParticipation,memberId);
     }
 
     @Transactional
     public RoomEnterResponse enterRoom(SessionMember member, final RoomEnterRequest request){
         Room room = roomRepository.findRoomWithPLock(request.getRoomId())
-                .orElseThrow(()-> new IllegalArgumentException("방 id 오류"));
+                .orElseThrow(()-> new IllegalArgumentException("해당 방은 존재하지 않습니다."));
         if(!room.verifyPassword(request.getPassword())) {
-            throw new IllegalArgumentException("올바르지 않은 비밀번호입니다");
+            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
         }
         addParticipation(member,room);
         return RoomEnterResponse.builder()
@@ -96,19 +86,19 @@ public class RoomService {
     @Transactional
     public Boolean updateRoomTopic(SessionMember member, final RoomTopicUpdateRequest request) {
         Room room = roomRepository.findRoomByRoomId(member.getMemberSeq(), request.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 방 정보입니다"));
+                .orElseThrow(() -> new IllegalArgumentException("방이 존재하지 않습니다"));
         if(!Objects.equals(member.getMemberSeq(), room.getLeader().getId())){
-            throw new IllegalArgumentException("팀장의 권한이 부여되지 않았습니다");
+            throw new IllegalArgumentException("해당 작업의 권한이 없습니다.");
         }
         room.updateTopic(topicRepository.findById(request.getTopicId())
-                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 주제 정보입니다")));
+                .orElseThrow(() -> new IllegalArgumentException("주제가 존재하지 않습니다")));
         return true;
     }
 
     //해당 방에 참여한 인원인지 확인하고, 아니라면 접근 제한 예외 발생
     public void validParticipationInRoom(final Long roomId, final SessionMember sessionMember) {
         if(!roomRepository.existMemberInRoom(sessionMember.getMemberSeq(),roomId)){
-            throw new AccessDeniedException("해당 방에 참여하지 않아 권한이 없습니다.");
+            throw new AccessDeniedException("해당 작업의 권한이 없습니다.");
         }
     }
 }

@@ -42,7 +42,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                 MemberFindMemberDto.builder()
                         .id(1L)
                         .profile("profilePath")
-                        .email("email")
                         .nickname("nickname")
                         .build()
         );
@@ -56,7 +55,7 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
         //when
         //then
         mockMvc.perform(
-                    MockMvcRequestBuilders.get("/api/v1/friends")
+                    MockMvcRequestBuilders.get("/api/v2/friends")
                             .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
@@ -75,8 +74,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                                         .description("데이터 개수"),
                                 fieldWithPath("data.members[]").type(ARRAY)
                                         .description("유저 정보 리스트"),
-                                fieldWithPath("data.members[].email").type(STRING)
-                                        .description("유저 이메일"),
                                 fieldWithPath("data.members[].id").type(NUMBER)
                                         .description("유저 정보 리스트"),
                                 fieldWithPath("data.members[].nickname").type(STRING)
@@ -95,7 +92,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                         MemberSearchMemberDto.builder()
                                 .id(1L)
                                 .profile("profilePath")
-                                .email("email")
                                 .nickname("nickname")
                                 .build()
                 );
@@ -110,7 +106,7 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                 //when
                 //then
                 mockMvc.perform(
-                            MockMvcRequestBuilders.get("/api/v1/friends/search")
+                            MockMvcRequestBuilders.get("/api/v2/friends/search")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .param("relation","false")
                                     .param("name","라이푸니")
@@ -137,8 +133,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                                                 .description("유저 정보 리스트"),
                                         fieldWithPath("data.members[].id").type(NUMBER)
                                                 .description("유저 id"),
-                                        fieldWithPath("data.members[].email").type(STRING)
-                                                .description("유저 이메일"),
                                         fieldWithPath("data.members[].nickname").type(STRING)
                                                 .description("유저 닉네임"),
                                         fieldWithPath("data.members[].profile").type(STRING)
@@ -156,7 +150,6 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                         MemberSearchMemberDto.builder()
                                 .id(1L)
                                 .profile("profilePath")
-                                .email("email")
                                 .nickname("nickname")
                                 .build()
                 );
@@ -171,7 +164,7 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                 //when
                 //then
                 mockMvc.perform(
-                            MockMvcRequestBuilders.get("/api/v1/friends/search")
+                            MockMvcRequestBuilders.get("/api/v2/friends/search")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .param("relation","true")
                                     .param("name","라이푸니")
@@ -196,10 +189,8 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                                                 .description("데이터 개수"),
                                         fieldWithPath("data.members[]").type(ARRAY)
                                                 .description("유저 정보 리스트"),
-                                        fieldWithPath("data.members[].email").type(STRING)
-                                                .description("유저 이메일"),
                                         fieldWithPath("data.members[].id").type(NUMBER)
-                                                .description("유저 이메일"),
+                                                .description("유저 id"),
                                         fieldWithPath("data.members[].nickname").type(STRING)
                                                 .description("유저 닉네임"),
                                         fieldWithPath("data.members[].profile").type(STRING)
@@ -212,7 +203,7 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
         void addFriend() throws Exception {
             //given
             MemberAddRequest request = MemberAddRequest.builder()
-                    .email("email@gmail.com")
+                    .friendId(1L)
                     .build();
 
             String content = objectMapper.writeValueAsString(request);
@@ -233,8 +224,8 @@ public class MemberApiControllerDocsTest extends RestDocsSupport {
                                     preprocessRequest(prettyPrint()),
                                     preprocessResponse(prettyPrint()),
                                     requestFields(
-                                            fieldWithPath("email").type(STRING)
-                                                    .description("추가할 유저의 이메일")
+                                            fieldWithPath("friendId").type(NUMBER)
+                                                    .description("추가할 유저 식별키")
                                     ),
                                     responseFields(
                                             fieldWithPath("code").type(NUMBER)

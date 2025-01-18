@@ -1,6 +1,5 @@
 package com.stool.studentcooperationtools.domain.member.controller.response;
 
-import com.stool.studentcooperationtools.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,14 +20,10 @@ public class MemberFindResponse {
         this.members = members;
     }
 
-    public static MemberFindResponse of(List<Member> members){
+    public static MemberFindResponse of(List<MemberFindMemberDto> members){
         return MemberFindResponse.builder()
                 .num(members.size())
-                .members(
-                        members.stream()
-                                .map(MemberFindMemberDto::of)
-                                .toList()
-                )
+                .members(members)
                 .build();
     }
 }

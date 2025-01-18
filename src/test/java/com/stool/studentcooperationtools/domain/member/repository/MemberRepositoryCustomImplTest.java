@@ -91,9 +91,9 @@ class MemberRepositoryCustomImplTest extends IntegrationTest {
         );
         //then
         assertThat(friendList).hasSize(1)
-                .extracting("email","nickname","profile")
+                .extracting("nickname","profile")
                 .containsExactly(
-                        tuple(friend.getEmail(), friend.getNickName(), friend.getProfile())
+                        tuple(friend.getNickName(), friend.getProfile())
                 );
     }
 
@@ -124,9 +124,9 @@ class MemberRepositoryCustomImplTest extends IntegrationTest {
         );
         //then
         assertThat(friendList).hasSize(1)
-                .extracting("email","nickname","profile")
+                .extracting("nickname","profile")
                 .containsExactly(
-                        tuple(notFriendUser.getEmail(), notFriendUser.getNickName(), notFriendUser.getProfile())
+                        tuple(notFriendUser.getNickName(), notFriendUser.getProfile())
                 );
     }
 

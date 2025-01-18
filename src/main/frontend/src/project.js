@@ -47,6 +47,20 @@ const Project = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchRoomsTitle , setSearchRoomsTitle] = useState("")
   const [searchExcludedRoomsTitle , setSearchExcludedRoomsTitle] = useState("")
+  const [debouncedSearchRoomsTitle, setDebouncedSearchRoomsTitle] = useState("");
+
+  useEffect(() => {
+      const handler = setTimeout(() => {
+          setDebouncedSearchRoomsTitle(searchRoomsTitle);
+      }, 500); // 1초 대기
+
+      return () => clearTimeout(handler); // 이전 타이머를 정리
+  }, [searchRoomsTitle]);
+
+  useEffect(() => {
+      setParticipationRoom(0); // 검색 실행
+  }, [debouncedSearchRoomsTitle]);
+
 
     // 방 목록 가져오기 (페이지에 따라 호출)
   const fetchRooms = (page,searchTitle,isParticipation) => {

@@ -41,7 +41,7 @@ public class RoomService {
         try {
             roomRepository.save(room);
         } catch (DataIntegrityViolationException e){
-            throw new DataIntegrityViolationException("중복된 방 제목입력하셨습니다.");
+            throw new DataIntegrityViolationException("중복된 방 제목입니다.");
         }
         participationRepository.save(Participation.of(user, room));
         List<Member> memberList = memberRepository.findMembersByMemberIdList(request.getParticipation());

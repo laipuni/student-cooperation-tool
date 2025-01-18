@@ -3,10 +3,13 @@ package com.stool.studentcooperationtools.domain.room.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.stool.studentcooperationtools.domain.room.controller.response.*;
+import com.stool.studentcooperationtools.domain.room.controller.response.QRoomSearchDto;
+import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchDto;
+import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
 
@@ -28,6 +31,8 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom{
 
     @Override
     public RoomSearchResponse searchRoomsBy(final String title, final int page, final boolean isParticipation, final Long memberId) {
+        Pageable pageable = PageRequest.of(page,ROOM_PAGE_SIZE);
+
         List<RoomSearchDto> result = queryFactory.select(
                         new QRoomSearchDto(
                                 room.id,
@@ -40,26 +45,22 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom{
                 .leftJoin(room.mainTopic)
                 .leftJoin(participation)
                 .on(participation.member.id.eq(memberId).and(participation.room.id.eq(room.id)))
-                .where(
-                        filterBy(isParticipation,title)
-                )
-                .orderBy(room.title.desc(),room.id.desc())
-                .offset(page)
-                .limit(ROOM_PAGE_SIZE)
+                .where(filterBy(isParticipation,title))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(room.id.desc())
                 .fetch();
 
-        JPAQuery<Long> countQuery = queryFactory.select(room.count())
+        JPAQuery<Long> countQuery = queryFactory
+                .select(room.count())
                 .from(room)
+                .leftJoin(room.mainTopic)
                 .leftJoin(participation)
                 .on(participation.member.id.eq(memberId).and(participation.room.id.eq(room.id)))
-                .where(
-                        filterBy(isParticipation,title)
-                );
-
-        PageRequest pageRequest = PageRequest.of(page, ROOM_PAGE_SIZE);
+                .where(filterBy(isParticipation,title));
 
         Page<RoomSearchDto> paginationResult = PageableExecutionUtils.getPage(
-                result, pageRequest, countQuery::fetchOne
+                result, pageable, countQuery::fetchOne
         );
 
         return RoomSearchResponse.of(paginationResult);

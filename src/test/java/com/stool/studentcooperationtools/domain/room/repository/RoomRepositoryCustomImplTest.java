@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.stool.studentcooperationtools.domain.PagingUtils.ROOM_PAGING_PARSE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
@@ -59,7 +58,7 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
         RoomSearchResponse result = roomRepository.searchRoomsBy("", 0, true, member.getId());
         //then
         assertThat(result).extracting("num","totalPage","firstPage","lastPage")
-                        .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,2);
+                .containsExactlyInAnyOrder(titleList.size(),2,1,2);
         assertThat(result.getRooms()).hasSize(5);
     }
 
@@ -73,19 +72,34 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
                 .profile("profile")
                 .nickName("nickname")
                 .build();
-        memberRepository.save(member);
+        Member other = Member.builder()
+                .role(Role.USER)
+                .email("other@.email.com")
+                .profile("profile")
+                .nickName("other")
+                .build();
+        memberRepository.saveAll(List.of(member,other));
+
+        Room otherRoom = createRoom("otherRoom", other);
+        Participation participation = Participation.builder()
+                .member(other)
+                .room(otherRoom)
+                .build();
+        roomRepository.save(otherRoom);
+        participationRepository.save(participation);
 
         String searchTitle = "title";
         List<String> titleList = List.of("title1","title2","title3","title4","title5","title6");
 
         for (String title : titleList) {
             Room room = createRoom(title, member);
-            Participation participation = Participation.builder()
-                    .member(member)
-                    .room(room)
-                    .build();
             roomRepository.save(room);
-            participationRepository.save(participation);
+            participationRepository.save(
+                    Participation.builder()
+                            .member(member)
+                            .room(room)
+                            .build()
+            );
         }
 
         //when
@@ -95,7 +109,7 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
         );
         //then
         assertThat(result).extracting("num","totalPage","firstPage","lastPage")
-                .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,2);
+                .containsExactlyInAnyOrder(titleList.size(),2,1,2);
         assertThat(result.getRooms()).hasSize(5);
     }
 
@@ -137,7 +151,7 @@ class RoomRepositoryCustomImplTest extends IntegrationTest {
         );
         //then
         assertThat(result).extracting("num","totalPage","firstPage","lastPage")
-                .containsExactlyInAnyOrder(ROOM_PAGING_PARSE,2,1,2);
+                .containsExactlyInAnyOrder(titleList.size(),2,1,2);
         assertThat(result.getRooms()).hasSize(5);
     }
 

@@ -33,7 +33,7 @@ public class RoomSearchResponse {
         int endPage = getEndPage(startPage,paginationResult.getTotalPages());
 
         return RoomSearchResponse.builder()
-                .num(paginationResult.getContent().size())
+                .num((int)paginationResult.getTotalElements())
                 .firstPage(startPage)
                 .lastPage(endPage)
                 .totalPage(paginationResult.getTotalPages())

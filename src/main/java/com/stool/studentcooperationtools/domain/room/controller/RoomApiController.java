@@ -33,7 +33,7 @@ public class RoomApiController {
     public ApiResponse<RoomSearchResponse> searchRoom(
             @RequestParam(value = "isParticipation",defaultValue = "true") boolean isParticipation,
             @RequestParam(value = "title", defaultValue = "") String title,
-            @RequestParam("page") int page,
+            @RequestParam(value = "page",defaultValue = "0") int page,
             SessionMember userInfo
     ){
         RoomSearchResponse response = roomService.searchRoom(

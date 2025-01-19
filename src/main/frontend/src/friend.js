@@ -122,7 +122,6 @@ const Friend = () => {
         return axios
             .get(`${domain}/api/v2/friends/search?relation=${relation}&name=${nickName}`)
             .then((res) => {
-                console.log(res.data.data);
                 return res.data.data;
             })
             .catch((error) => {
@@ -170,6 +169,9 @@ const Friend = () => {
     };
 
     const findUser = (nickName) => {
+        if(!nickName || nickName.trim() === ""){
+            return
+        }
         getSearchResult(nickName, false)
             .then((results) => {
                 setSearchUser((prevUser) => ({
@@ -189,8 +191,6 @@ const Friend = () => {
             return searchRegExp.test(member.nickname)
         }) || [];
 
-        console.log(allFriends);
-        console.log(filteredFriends);
         setFriends({
             num : filteredFriends.length,
             members: filteredFriends
@@ -270,7 +270,7 @@ const Friend = () => {
                             <button
                                 className="search_button"
                                 type="submit"
-                                onClick={() => findUser(searchUserName,false)}
+                                onClick={() => findUser(searchUserName)}
                             >
                                 <img src={searchIcon} alt="검색"/>
                             </button>

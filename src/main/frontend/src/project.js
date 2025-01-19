@@ -16,28 +16,27 @@ import searchIcon from "./images/search.svg";
 import emptyBox from "./images/emptyBox.svg"
 import emptyProject from "./images/project.svg"
 import mainlogo from "./images/mainlogo.png";
+import {createFuzzyMatcher} from "./searchRexp";
 
 const Project = () => {
   const [createmodal, setCreateModal] = useState(false);
   const [notJoinedRooms, setNotJoinedRooms] = useState({num: 0, rooms: []});
-  const [result, setResult] = useState({num: 0, members: []}); // 초대할 친구 정보
+  const [allResult, setAllResult] = useState({num: 0, members: []}); // 초대할 친구 정보
+  const [viewResult, setViewResult] = useState({num : 0, members : []})
   const [participant, setParticipant] = useState({num: 0, members: []}); // 이미 초대된 친구들 정보
 
   const [enterRoomId, setEnterRoomId] = useState(0)
-  const [searchFriend, setSearchFriend] = useState("");
   const [page, setPage] = useState(0);
   const [searchModal, setSearchModal] = useState(false);
   const [enterModal, setEnterModal] = useState(false);
   const [friendModal, setFriendModal] = useState(false);
-  const [deleteRoomId, setDeleteRoomId] = useState(null);
-  const [searched, setSearched] = useState(false);
-  const [term, setTerm] = useState('');
-  const [debouncedTerm, setDebouncedTerm] = useState(term);
+  const [debouncedSearchFriendName, setDebouncedSearchFriendName] = useState(null);
   const navigate = useNavigate();
   const [enterRoomTitle, setEnterRoomTitle] = useState("");
   const [userId, setUserId] = useState(null);
   const location = useLocation();
   const {presentationId} = location.state || {};
+  const [searchFriendName, setSearchFriendName] = useState("")
 
   const [notJoinedRoomPage, setNotJoinedRoomPage] = useState(1)
 
@@ -121,39 +120,25 @@ const Project = () => {
   // ====================================================
   useEffect(() => {
       const timer = setTimeout(() =>
-      setTerm(debouncedTerm), 500);
+        setDebouncedSearchFriendName(searchFriendName), 500);
       return () => clearTimeout(timer);
-  }, [debouncedTerm]);
+  }, [searchFriendName]);
 
-    useEffect(() => {  if (term !== '') {
-        handleFriend(term);
-    } else {
-        clearResults();
-    }
-  }, [term]);
+  useEffect(() => {
+      if (debouncedSearchFriendName) {
+          //검색어가 존재할 경우
+          viewJoinFriends(debouncedSearchFriendName);
+      } else {
+          //검색어가 없을 경우 결과 초기화
+          setViewResult(allResult);
+      }
+  }, [debouncedSearchFriendName]);
 
     //마운트 할 때 유저id 들고오기
-    useEffect(() => {
-        setParticipationRoom(0);
-        userFetch();
-    }, []);
-
-  useEffect(()=>{
-      axios.get(`${domain}/api/v1/friends/search?relation=true&name=${searchFriend}`)
-          .then((res) => {
-              const allResults = res.data.data.members; // 검색 결과
-              const filteredResults = participant.num > 0
-                  ? allResults.filter((result) =>
-                      !participant.members.some((member) => member.id === result.id)
-                  )
-                  : allResults;
-              setResult({num: filteredResults.length, members: filteredResults});
-          })
-          .catch((reason) => {
-              console.log("Failed to search friend");
-              console.log(reason);
-          });
-  }, [searched])
+  useEffect(() => {
+      setParticipationRoom(0);
+      userFetch();
+  }, []);
 
     //유저 id 들고오기(소켓에서 활용)
     const userFetch = async () => {
@@ -164,7 +149,6 @@ const Project = () => {
             console.error("유저 정보를 가져오는 데 실패했습니다.", error);
         }
     };
-    const clearResults = () => setResult({num: 0, members: []});
 
     const handleSearch = ({page}) => {
         const searchTitle = document.getElementById("roomSearchInput").value;
@@ -274,8 +258,6 @@ const Project = () => {
             .catch((error) => {
                 // 에러 처리
                 if (error.response) {
-                    console.log(error.response)
-                    console.log(error.response.data.message)
                     switch (error.response.status) {
                         case 400:  // Bad Request
                             errorMessageDiv.textContent = error.response.data.message;
@@ -306,7 +288,7 @@ const Project = () => {
   }
 
   const closeFriendModal = () => {
-      setSearchFriend("");
+      setSearchFriendName("");
       setFriendModal(false);
   }
 
@@ -326,26 +308,34 @@ const Project = () => {
                     !participant.members.some((member) => member.id === result.id)
                 )
                 : allResults;
-            setResult({num: filteredResults.length, members: filteredResults})
-          setFriendModal(true);
+            setAllResult({num: filteredResults.length, members: filteredResults})
+            setViewResult({num: filteredResults.length, members: filteredResults})
+            setFriendModal(true);
         })
         .catch(() => {
           console.log("Failed to list friend")
         })
   }
   /* 참여할 유저 ( 친구 상태 ) 검색 */
-  const handleFriend = (value) => {
-      setSearchFriend(value.toLowerCase());
-      setSearched((prev)=>!prev);
+  const viewJoinFriends = (nickName) => {
+      const searchRegExp = createFuzzyMatcher(nickName)
+      const filteredAllResult = allResult.members?.filter((member) => {
+          return searchRegExp.test(member.nickname)
+      }) || [];
+
+      setViewResult({
+          num : filteredAllResult.length,
+          members: filteredAllResult
+      });
   };
 
 
   const addResult = (result, isSearch) => {
     setParticipant(prev => ({ num: prev.num + 1, members: [...prev.members, result ]})); // 참가자들 리스트 추가
-      setResult((prev) => ({
-          num: prev.num - 1,
-          members: prev.members.filter((member) => member !== result)
-      }))};
+    setViewResult((prev) => ({
+        num: prev.num - 1,
+        members: prev.members.filter((member) => member !== result)
+    }))};
 
     const handleRemoveParticipant = (email) => {
         setParticipant((prev) => ({
@@ -560,96 +550,94 @@ const Project = () => {
                                     </div>
                                 </div>
                             </div>
-                        )}
+                )}
 
-                        {createmodal && (
-                            <div className="modal_overlay" onClick={() => setCreateModal(false)}>
-                                <div onClick={(e) => e.stopPropagation()} className="create_modal_content">
-                                    <button className="close_button" onClick={() => closeCreateModal()}>
-                                        X
-                                    </button>
-                                    <div
-                                        id="createRoomErrorMessage"
-                                        className="error-message"
-                                        style={{
-                                            color: 'red',
-                                            textAlign: 'center',
-                                            marginTop: '10px',
-                                            display: 'none'  // 초기에는 숨김
-                                        }}
-                                    ></div>
-                                    <div className="modal_body">
-                                        <div className="modal_section">
-                                            <label className="modal_label">방 제목</label>
+                {createmodal && (
+                    <div className="modal_overlay" onClick={() => setCreateModal(false)}>
+                        <div onClick={(e) => e.stopPropagation()} className="create_modal_content">
+                            <button className="close_button" onClick={() => closeCreateModal()}>
+                                X
+                            </button>
+                            <div
+                                id="createRoomErrorMessage"
+                                className="error-message"
+                                style={{
+                                    color: 'red',
+                                    textAlign: 'center',
+                                    marginTop: '10px',
+                                    display: 'none'
+                                }}
+                            ></div>
+                            <div className="modal_body">
+                                <div className="modal_section">
+                                    <label className="modal_label">방 제목</label>
 
-                                            <input className="modal_input" id="createRoomTitle" type="text"
-                                            />
-                                        </div>
+                                    <input className="modal_input" id="createRoomTitle" type="text"
+                                    />
+                                </div>
 
-                                        <div className="modal_section">
-                                            <label className="modal_label">비밀번호</label>
-                                            <input style={{fontFamily: 'Arial, sans-serif'}} className="modal_input" id="createRoomPassword" type="password"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="add_friend">
-                                        <ParticipantList/> {/* 참가할 친구 리스트 */}
-                                        <button className="common-button" onClick={() => {
-                                            handleFriendList()
-                                        }}>
-                                            +
-                                        </button>
-                                    </div>
-                                    <button className="common-button" onClick={() => handleCreateClick()}>생성</button>
+                                <div className="modal_section">
+                                    <label className="modal_label">비밀번호</label>
+                                    <input style={{fontFamily: 'Arial, sans-serif'}} className="modal_input" id="createRoomPassword" type="password"
+                                    />
                                 </div>
                             </div>
-                        )}
+                            <div className="add_friend">
+                                <ParticipantList/> {/* 참가할 친구 리스트 */}
+                                <button className="common-button" onClick={() => handleFriendList()}>
+                                    +
+                                </button>
+                            </div>
+                            <button className="common-button" onClick={() => handleCreateClick()}>생성</button>
+                        </div>
+                    </div>
+                )}
 
                 {enterModal && (
                     <div className="enter_modal_overlay" onClick={closeEnterModal}>
                         <div className="enter_modal_content" style={{textAlign: "center"}} onClick={(e)=> e.stopPropagation()}>
                             <button className="close_button" onClick={() => closeEnterModal()}>
-                      X
-                  </button>
-                  <label className="enter_modal_label">
-                      제목 : {enterRoomTitle}
-                  </label>
-                  <div id="passwordInvalidDiv" style={{color : "gray"}}>비밀번호를 입력해주세요.</div>
-                  <input style={{fontFamily: 'Arial, sans-serif'}} className="enter_modal_input" id="roomPasswordInput" type="password"/>
-                  <button className="enter_button" onClick={() => verifyPasswordAndEnterRoom(enterRoomId)}> 입장 </button>
-              </div>
-          </div>
-        )}
+                                X
+                            </button>
+                            <label className="enter_modal_label">
+                                제목 : {enterRoomTitle}
+                            </label>
+                            <div id="passwordInvalidDiv" style={{color : "gray"}}>비밀번호를 입력해주세요.</div>
+                            <input style={{fontFamily: 'Arial, sans-serif'}} className="enter_modal_input" id="roomPasswordInput" type="password"/>
+                            <button className="enter_button" onClick={() => verifyPasswordAndEnterRoom(enterRoomId)}> 입장 </button>
+                        </div>
+                    </div>
+                )}
 
-        {friendModal && (
-            <div className="friend_overlay" onClick={()=> closeFriendModal()}>
-                <div onClick={(e)=> e.stopPropagation()} className="friend_modal">
-                <input
-                    className="participant_search_txt"
-                    type="text"
-                    placeholder="친구 이름을 입력하세요."
-                    onChange={(e) => setDebouncedTerm(e.target.value)}
-                    value={debouncedTerm}
-                />
-                    <button className="close_button" onClick={() => closeFriendModal()}>
-                        X
-                    </button>
-                <div className="search_friend_list">
-                    {result.num > 0 ? (
-                        result.members.map((member) => (
-                            <div key={member.email} className="friend_card">
-                                <img src={member.profile || userImage} alt="프로필"/>
-                                <h2>{member.nickname}</h2>
-                                <button className="add_result_button"
-                                    onClick={() => addResult(member)}> 초대
-                                </button>
-                            </div>
-                        ))
-                    ) : <h2>친구가 없습니다.</h2>}
-                </div>
-                </div>
-            </div>
-        )}
+                {friendModal && (
+                    <div className="friend_overlay" onClick={()=> closeFriendModal()}>
+                        <div onClick={(e)=> e.stopPropagation()} className="friend_modal">
+                        <input
+                            className="participant_search_txt"
+                            type="text"
+                            placeholder="친구 이름을 입력하세요."
+                            onChange={(e) => setSearchFriendName(e.target.value)}
+                            value={searchFriendName}
+                        />
+                            <button className="close_button" onClick={() => closeFriendModal()}>
+                                X
+                            </button>
+                        <div className="search_friend_list scrollbar">
+                            {viewResult.num > 0 ? (
+                                viewResult.members.map((member) => (
+                                    <div key={member.email} className="friend_card">
+                                        <img src={member.profile || userImage} alt="프로필"/>
+                                        <h2>{member.nickname}</h2>
+                                        <button className="add_result_button"
+                                            onClick={() => addResult(member)}> 초대
+                                        </button>
+                                    </div>
+                                ))
+                            ) : <h2>친구가 없습니다.</h2>}
+                        </div>
+                        </div>
+                    </div>
+                )}
     </div>
   );
 };

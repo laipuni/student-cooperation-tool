@@ -15,7 +15,6 @@ const Main = () => {
                 withCredentials: true,
             })
             .then((res) => {
-                console.log(res)
                 setLoginInfo(res.data.data);
                 setIsAuthenticated(true)
             })

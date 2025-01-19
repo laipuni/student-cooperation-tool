@@ -324,23 +324,26 @@ const Project = () => {
       }) || [];
 
       setViewResult({
-          num : filteredAllResult.length,
-          members: filteredAllResult
+          num: filteredAllResult.length,
+          members: filteredAllResult.filter(member =>
+              // 이미 추가한 친구는 보이지 않는다.
+              !participant.members.some(participantMember => participantMember.id === member.id)
+          )
       });
   };
 
 
-  const addResult = (result, isSearch) => {
-    setParticipant(prev => ({ num: prev.num + 1, members: [...prev.members, result ]})); // 참가자들 리스트 추가
+  const addResult = (addedFriend) => {
+    setParticipant(prev => ({ num: prev.num + 1, members: [...prev.members, addedFriend ]})); // 참가자들 리스트 추가
     setViewResult((prev) => ({
         num: prev.num - 1,
-        members: prev.members.filter((member) => member !== result)
+        members: prev.members.filter((member) => member !== addedFriend)
     }))};
 
-    const handleRemoveParticipant = (email) => {
+    const handleRemoveParticipant = (participationId) => {
         setParticipant((prev) => ({
             num: prev.num - 1, // num 값 감소
-            members: prev.members.filter((member) => member.email !== email),
+            members: prev.members.filter((member) => member.id !== participationId),
         }));
     };
     const ParticipantList = () => {
@@ -350,10 +353,10 @@ const Project = () => {
             <h2>팀원 목록</h2>
             {participant.num > 0 ? (
                 participant.members.map((participant) => (
-                    <div key={participant.email} className="room_card">
+                    <div key={participant.id} className="room_card">
                         <img src={participant.profile || userImage} alt="프로필"/>
                         <h2>{participant.nickname}</h2>
-                        <button onClick={() => handleRemoveParticipant(participant.email)}>
+                        <button onClick={() => handleRemoveParticipant(participant.id)}>
                             X
                         </button>
                     </div>
@@ -571,9 +574,7 @@ const Project = () => {
                             <div className="modal_body">
                                 <div className="modal_section">
                                     <label className="modal_label">방 제목</label>
-
-                                    <input className="modal_input" id="createRoomTitle" type="text"
-                                    />
+                                    <input className="modal_input" id="createRoomTitle" type="text"/>
                                 </div>
 
                                 <div className="modal_section">

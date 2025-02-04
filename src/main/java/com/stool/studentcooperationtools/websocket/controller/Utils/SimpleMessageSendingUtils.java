@@ -3,10 +3,6 @@ package com.stool.studentcooperationtools.websocket.controller.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
-import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig.*;
-import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig.PRESENTATION_MANAGE_URL_FORMAT;
-import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig.CHAT_ROOM_URL_FORMAT;
-import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig.TOPIC_DECISION_URL_FORMAT;
 
 /*
 주제 선정, 자료 조사, 발표 관리 단계 sub url을 생성, 메세지 전송 기능을 분리시키기 위해 만들었다.
@@ -14,6 +10,14 @@ import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig
 @Component
 @RequiredArgsConstructor
 public class SimpleMessageSendingUtils {
+
+    public static final String ROOM_PARTICIPATION_URL_FORMAT = "/sub/rooms/%d/online";
+    public static final String TOPIC_DECISION_URL_FORMAT = "/sub/rooms/%d/topics";
+    public static final String PRESENTATION_MANAGE_URL_FORMAT = "/sub/rooms/%d/presentation";
+    public static final String CHAT_ROOM_URL_FORMAT = "/sub/rooms/%d/chat";
+    public static final String PART_RESEARCH_URL_FORMAT = "/sub/rooms/%d/part";
+    public static final String SCRIPT_MANAGE_URL_FORMAT = "/sub/rooms/%d/scripts";
+    public static final String ERROR_MESSAGE_URL = "/sub/errors";
 
     private final SimpMessageSendingOperations simpMessageSendingOperations;
 
@@ -64,6 +68,10 @@ public class SimpleMessageSendingUtils {
      */
     public void convertAndSend(final String subUrl, final Object response) {
         simpMessageSendingOperations.convertAndSend(subUrl, response);
+    }
+
+    public void SendErrorMessageToUser(final String userId, final Object response) {
+        simpMessageSendingOperations.convertAndSendToUser(userId,ERROR_MESSAGE_URL,response);
     }
 
 }

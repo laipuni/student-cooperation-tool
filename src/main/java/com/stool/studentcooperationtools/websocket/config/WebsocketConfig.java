@@ -1,7 +1,8 @@
 package com.stool.studentcooperationtools.websocket.config;
 
-import com.stool.studentcooperationtools.websocket.WebsocketErrorHandler;
+import com.stool.studentcooperationtools.websocket.error.WebsocketErrorHandler;
 import com.stool.studentcooperationtools.websocket.converter.SessionMemberMessageConverter;
+import com.stool.studentcooperationtools.websocket.interceptor.WebsocketRequestLogInterceptor;
 import com.stool.studentcooperationtools.websocket.interceptor.WebsocketSecurityInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -19,16 +20,11 @@ import java.util.List;
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
-    public static final String ROOM_PARTICIPATION_URL_FORMAT = "/sub/rooms/%d/online";
-    public static final String TOPIC_DECISION_URL_FORMAT = "/sub/rooms/%d/topics";
-    public static final String PRESENTATION_MANAGE_URL_FORMAT = "/sub/rooms/%d/presentation";
-    public static final String CHAT_ROOM_URL_FORMAT = "/sub/rooms/%d/chat";
-    public static final String PART_RESEARCH_URL_FORMAT = "/sub/rooms/%d/part";
-    public static final String SCRIPT_MANAGE_URL_FORMAT = "/sub/rooms/%d/scripts";
 
     private final WebsocketErrorHandler websocketErrorHandler;
     private final WebsocketSecurityInterceptor websocketSecurityInterceptor;
     private final SessionMemberMessageConverter sessionMemberMessageConverter;
+    private final WebsocketRequestLogInterceptor websocketRequestLogInterceptor;
 
     @Override
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
@@ -37,6 +33,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
         registry.setErrorHandler(websocketErrorHandler);
     }
+
 
     @Override
     public boolean configureMessageConverters(final List<MessageConverter> messageConverters) {
@@ -55,12 +52,14 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(final MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/sub");
+        registry.enableSimpleBroker("/sub", "/user");
         registry.setApplicationDestinationPrefixes("/pub");
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void configureClientInboundChannel(final ChannelRegistration registration) {
-        registration.interceptors(websocketSecurityInterceptor);
+        registration.interceptors(websocketSecurityInterceptor)
+                .interceptors(websocketRequestLogInterceptor);
     }
 }

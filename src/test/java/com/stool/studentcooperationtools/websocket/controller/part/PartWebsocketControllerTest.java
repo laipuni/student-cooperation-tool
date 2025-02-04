@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import static com.stool.studentcooperationtools.websocket.WebsocketMessageType.*;
-import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig.PART_RESEARCH_URL_FORMAT;
+import static com.stool.studentcooperationtools.websocket.controller.Utils.SimpleMessageSendingUtils.PART_RESEARCH_URL_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PartWebsocketControllerTest extends WebsocketTestSupport {

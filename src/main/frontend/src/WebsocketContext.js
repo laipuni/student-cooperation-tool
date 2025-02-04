@@ -15,10 +15,13 @@ export const WebSocketProvider = ({ children }) => {
     const stompClient = useRef(null);
     const location = useLocation();
     const { roomId, subUrl, userId, leaderId, presentationId } = location.state || {};
+    const websocketId = useRef(null);
 
     // 온라인 상태 state
     const [online, setOnline] = useState({num : 0, online : []})
-    const onlineSubscribe = useRef([]); // 온라인 상태 주소 구독 객체
+    const onlineSubscribe = useRef([]); // 온라인 상태 채널 구독 객체
+    const errorSubscribe = useRef([]); // 에러 메세지 채널 구독 객체
+
 
     const updateOnline = (online) => {
         //온라인 유저 추가
@@ -70,8 +73,7 @@ export const WebSocketProvider = ({ children }) => {
         window.location.href = "/";
     }
 
-    const onConnect = () => {
-        setIsConnected(true)
+    const setOnlineSub = () => {
         onlineSubscribe.current = stompClient.current.subscribe(
             `/sub/rooms/${roomId}/online`,
             receiveMessage,
@@ -85,6 +87,27 @@ export const WebSocketProvider = ({ children }) => {
             destination : `/pub/room/enter`,
             body : JSON.stringify(data)
         })
+    }
+
+    const setErrorChannelSub = () =>{
+        errorSubscribe.current = stompClient.current.subscribe(
+            `/user/${websocketId.current}/sub/errors`,
+            (message) => {
+                const frame = JSON.parse(message.body);
+                alert(frame.message)
+            },
+            (error) =>{
+                console.log(error)
+            }
+        )
+    }
+
+    const onConnect = (frame) => {
+        // 에러 메세지 채널을 위한 유저의 개인 websocketId를 저장
+        websocketId.current = frame.headers['user-name']
+        setIsConnected(true)
+        setOnlineSub()
+        setErrorChannelSub()
     }
 
     useEffect(() => {
@@ -103,6 +126,7 @@ export const WebSocketProvider = ({ children }) => {
         return () => {
             if (stompClient.current) {
                 offOnline();
+                errorSubscribe.current.unsubscribe();
                 stompClient.current.deactivate();
             }
         };

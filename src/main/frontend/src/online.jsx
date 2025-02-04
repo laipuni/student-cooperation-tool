@@ -5,7 +5,6 @@ const Online = ({online}) => {
     const [showList, setShowList] = useState(false);
 
     const toggleList = () => {
-        console.log(online)
         setShowList(!showList);
     };
 

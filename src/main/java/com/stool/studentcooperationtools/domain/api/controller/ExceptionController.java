@@ -3,9 +3,9 @@ package com.stool.studentcooperationtools.domain.api.controller;
 
 import com.stool.studentcooperationtools.domain.api.ApiExceptionResponse;
 import com.stool.studentcooperationtools.exception.global.DuplicateDataException;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,10 +42,10 @@ public class ExceptionController {
         );
     }
 
-    //권한이 없는 작업을 요청받았을 경우
-    @ExceptionHandler(value = AccessDeniedException.class)
+    //권한을 가지고 있지 않은 사용자가 권한이 필요한 요청을 했을 경우
+    @ExceptionHandler(value = UnAuthorizationException.class)
     @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    public ApiExceptionResponse<Object> AccessDeniedException(AccessDeniedException exception){
+    public ApiExceptionResponse<Object> AccessDeniedException(UnAuthorizationException exception){
         log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
                 HttpStatus.FORBIDDEN,

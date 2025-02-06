@@ -14,10 +14,10 @@ import com.stool.studentcooperationtools.domain.room.controller.response.RoomSea
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
 import com.stool.studentcooperationtools.exception.global.DuplicateDataException;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +101,7 @@ public class RoomService {
     //해당 방에 참여한 인원인지 확인하고, 아니라면 접근 제한 예외 발생
     public void validParticipationInRoom(final Long roomId, final SessionMember sessionMember) {
         if(!roomRepository.existMemberInRoom(sessionMember.getMemberSeq(),roomId)){
-            throw new AccessDeniedException("해당 작업의 권한이 없습니다.");
+            throw new UnAuthorizationException("해당 작업의 권한이 없습니다.");
         }
     }
 }

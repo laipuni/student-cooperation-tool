@@ -9,6 +9,7 @@ import com.stool.studentcooperationtools.domain.part.controller.response.PartFin
 import com.stool.studentcooperationtools.domain.part.repository.PartRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.part.request.PartAddWebsocketRequest;
 import com.stool.studentcooperationtools.websocket.controller.part.request.PartDeleteWebsocketRequest;
@@ -18,7 +19,6 @@ import com.stool.studentcooperationtools.websocket.controller.part.response.Part
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -333,7 +333,7 @@ class PartServiceTest extends IntegrationTest {
         //when
         //then
         assertThatThrownBy(() -> partService.deletePart(request,sessionMember))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("역할을 삭제할 권한이 없습니다.");
     }
 
@@ -577,7 +577,7 @@ class PartServiceTest extends IntegrationTest {
         //when
         //then
         assertThatThrownBy(() -> partService.updatePart(request,sessionMember))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("역할을 수정할 권한이 없습니다.");
     }
 

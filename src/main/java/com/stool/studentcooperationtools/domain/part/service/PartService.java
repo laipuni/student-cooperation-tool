@@ -8,6 +8,7 @@ import com.stool.studentcooperationtools.domain.part.controller.response.PartFin
 import com.stool.studentcooperationtools.domain.part.repository.PartRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.part.request.PartAddWebsocketRequest;
 import com.stool.studentcooperationtools.websocket.controller.part.request.PartDeleteWebsocketRequest;
@@ -58,7 +59,7 @@ public class PartService {
         fileRepository.deleteAllByInPartId(List.of(request.getPartId()));
         int result = partRepository.deletePartByLeaderOrOwner(request.getPartId(), member.getMemberSeq());
         if(result == 0){
-            throw new AccessDeniedException("역할을 삭제할 권한이 없습니다.");
+            throw new UnAuthorizationException("역할을 삭제할 권한이 없습니다.");
         }
         return PartDeleteWebsocketResponse.of(request.getPartId());
     }
@@ -69,7 +70,7 @@ public class PartService {
                 .orElseThrow(() -> new IllegalArgumentException("수정할 역할이 존재하지 않습니다."));
         if(isNotLeader(member.getMemberSeq(), part.getRoom().getLeader().getId())){
             //방장이 아닌 경우
-            throw new AccessDeniedException("역할을 수정할 권한이 없습니다.");
+            throw new UnAuthorizationException("역할을 수정할 권한이 없습니다.");
         }
 
         if(isChangeMember(request.getMemberId(), part.getMember().getId())){

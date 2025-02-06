@@ -45,7 +45,7 @@ public class ExceptionController {
     //권한을 가지고 있지 않은 사용자가 권한이 필요한 요청을 했을 경우
     @ExceptionHandler(value = UnAuthorizationException.class)
     @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    public ApiExceptionResponse<Object> AccessDeniedException(UnAuthorizationException exception){
+    public ApiExceptionResponse<Object> UnAuthorizationException(UnAuthorizationException exception){
         log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
                 HttpStatus.FORBIDDEN,
@@ -58,7 +58,7 @@ public class ExceptionController {
     //DB에 유니크로 설정한 값이 중복으로 존재할 경우
     @ExceptionHandler(DuplicateDataException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiExceptionResponse<Object> DataIntegrityViolationException(DuplicateDataException exception){
+    public ApiExceptionResponse<Object> DuplicateDataException(DuplicateDataException exception){
         log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
                 HttpStatus.BAD_REQUEST,

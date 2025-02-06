@@ -10,6 +10,7 @@ import com.stool.studentcooperationtools.domain.review.controller.request.Review
 import com.stool.studentcooperationtools.domain.review.controller.response.ReviewAddResponse;
 import com.stool.studentcooperationtools.domain.review.controller.response.ReviewFindResponse;
 import com.stool.studentcooperationtools.domain.review.repository.ReviewRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -53,7 +54,7 @@ public class ReviewService {
         int result = reviewRepository.deleteReviewByMemberIdAndReviewId(request.getReviewId(), sessionMember.getMemberSeq());
         if(result == 0){
             //본인이 작성하지 않아 삭제하지 못한경우
-            throw new AccessDeniedException("평가를 제거할 권한이 없습니다.");
+            throw new UnAuthorizationException("평가를 제거할 권한이 없습니다.");
         }
         return true;
     }

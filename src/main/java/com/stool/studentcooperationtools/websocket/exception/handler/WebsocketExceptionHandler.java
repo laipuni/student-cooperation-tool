@@ -30,7 +30,7 @@ public class WebsocketExceptionHandler {
     }
 
     @MessageExceptionHandler(value = PrincipalNotFoundException.class)
-    public void IllegalArgumentException(Message<?> message, PrincipalNotFoundException e) {
+    public void PrincipalNotFoundException(Message<?> message, PrincipalNotFoundException e) {
         log.warn("[{}] {}",e.getClass().getSimpleName(), e.getMessage());
         sendErrorMessage(e, getPrincipal(message));
     }
@@ -48,7 +48,7 @@ public class WebsocketExceptionHandler {
     }
 
     @MessageExceptionHandler(value = UnAuthorizationException.class)
-    public void AccessException(Message<?> message, UnAuthorizationException e) {
+    public void UnAuthorizationException(Message<?> message, UnAuthorizationException e) {
         log.trace("[{}] {}",e.getClass().getSimpleName(), e.getMessage());
         sendErrorMessage(e, getPrincipal(message));
     }

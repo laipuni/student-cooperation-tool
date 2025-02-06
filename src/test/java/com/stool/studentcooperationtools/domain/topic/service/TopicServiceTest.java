@@ -8,13 +8,13 @@ import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.Topic;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.topic.request.TopicAddSocketRequest;
 import com.stool.studentcooperationtools.websocket.controller.topic.request.TopicDeleteSocketRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -176,7 +176,7 @@ class TopicServiceTest extends IntegrationTest {
         List<Topic> topics = topicRepository.findAll();
         //then
         assertThatThrownBy(() -> topicService.deleteTopic(request, sessionMember))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("주제를 삭제할 권한이 없습니다.");
         assertThat(topics).hasSize(1);
     }

@@ -8,13 +8,13 @@ import com.stool.studentcooperationtools.domain.topic.Topic;
 import com.stool.studentcooperationtools.domain.topic.controller.response.TopicFindResponse;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
 import com.stool.studentcooperationtools.domain.vote.respository.VoteRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.topic.request.TopicAddSocketRequest;
 import com.stool.studentcooperationtools.websocket.controller.topic.request.TopicDeleteSocketRequest;
 import com.stool.studentcooperationtools.websocket.controller.topic.response.TopicAddSocketResponse;
 import com.stool.studentcooperationtools.websocket.controller.topic.response.TopicDeleteSocketResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,12 +50,12 @@ public class TopicService {
         return TopicAddSocketResponse.of(topic);
     }
 
-    @Transactional(rollbackFor = AccessDeniedException.class)
+    @Transactional(rollbackFor = UnAuthorizationException.class)
     public TopicDeleteSocketResponse deleteTopic(final TopicDeleteSocketRequest request, SessionMember member) {
         voteRepository.deleteAllByTopicId(request.getTopicId());
         if(topicRepository.deleteTopicByLeaderOrOwner(request.getTopicId(), member.getMemberSeq()) == 0){
             //본인,방장이 아닌 경우는 삭제를 할 수 없다.
-            throw new AccessDeniedException("주제를 삭제할 권한이 없습니다.");
+            throw new UnAuthorizationException("주제를 삭제할 권한이 없습니다.");
         };
         return TopicDeleteSocketResponse.of(request.getTopicId());
     }

@@ -2,7 +2,8 @@ package com.stool.studentcooperationtools.domain.api.controller;
 
 
 import com.stool.studentcooperationtools.domain.api.ApiExceptionResponse;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.stool.studentcooperationtools.exception.global.DuplicateDataException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-
+@Slf4j
 @RestControllerAdvice
 public class ExceptionController {
 
@@ -19,6 +20,7 @@ public class ExceptionController {
     @ExceptionHandler(value = BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiExceptionResponse<Object> bindException(BindException exception){
+        log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
             HttpStatus.BAD_REQUEST,
                 exception.getBindingResult()
@@ -28,10 +30,11 @@ public class ExceptionController {
         );
     }
 
-    //클라이언트에서 받은 값을 사용할 때 유효하지 않은 값일 경우 발생하는 예외를 처리한다.
+    //클라이언트의 요청 값이 유효하지 않을 경우
     @ExceptionHandler(value = IllegalArgumentException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ApiExceptionResponse<Object> IllegalArgumentException(IllegalArgumentException exception){
+        log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
@@ -39,27 +42,28 @@ public class ExceptionController {
         );
     }
 
-    //권한이 없는 작업을 클라이언트에서 요청할 때, 발생하는 예외를 처리한다.
+    //권한이 없는 작업을 요청받았을 경우
     @ExceptionHandler(value = AccessDeniedException.class)
     @ResponseStatus(value = HttpStatus.FORBIDDEN)
     public ApiExceptionResponse<Object> AccessDeniedException(AccessDeniedException exception){
+        log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
-                HttpStatus.BAD_GATEWAY,
+                HttpStatus.FORBIDDEN,
                 exception.getMessage(),
                 null
         );
     }
 
 
-    //방 제목 중복과 같이 중복된 값을 생성하려 할 때 발생하는 예외를 처리한다.
-    @ExceptionHandler(DataIntegrityViolationException.class)
+    //DB에 유니크로 설정한 값이 중복으로 존재할 경우
+    @ExceptionHandler(DuplicateDataException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiExceptionResponse<Object> DataIntegrityViolationException(DataIntegrityViolationException exception){
+    public ApiExceptionResponse<Object> DataIntegrityViolationException(DuplicateDataException exception){
+        log.trace("[ {} ] message = {}", exception.getClass().getSimpleName(), exception.getMessage());
         return ApiExceptionResponse.of(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 null
         );
-
     };
 }

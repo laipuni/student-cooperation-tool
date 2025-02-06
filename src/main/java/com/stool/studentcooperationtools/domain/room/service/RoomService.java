@@ -13,6 +13,7 @@ import com.stool.studentcooperationtools.domain.room.controller.response.RoomEnt
 import com.stool.studentcooperationtools.domain.room.controller.response.RoomSearchResponse;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
+import com.stool.studentcooperationtools.exception.global.DuplicateDataException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,11 +39,7 @@ public class RoomService {
         Member user = memberRepository.findById(member.getMemberSeq())
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보가 등록되어 있지 않습니다"));
         Room room = Room.of(request, user);
-        try {
-            roomRepository.save(room);
-        } catch (DataIntegrityViolationException e){
-            throw new DataIntegrityViolationException("중복된 방 제목입니다.");
-        }
+        saveRoom(room);
         participationRepository.save(Participation.of(user, room));
         List<Member> memberList = memberRepository.findMembersByMemberIdList(request.getParticipation());
         List<Participation> participation = memberList.stream()
@@ -55,10 +52,16 @@ public class RoomService {
                 .build();
     }
 
-    public RoomSearchResponse searchRoom(
-            final String title, final int page,
-            final boolean isParticipation, final Long memberId
-    ) {
+    private void saveRoom(final Room room) {
+        try {
+            roomRepository.save(room);
+        } catch (DataIntegrityViolationException e){
+            throw new DuplicateDataException("동일한 제목의 방이 존재합니다.",e.getCause());
+        }
+    }
+
+    public RoomSearchResponse searchRoom(final String title, final int page,
+                                         final boolean isParticipation, final Long memberId) {
         return roomRepository.searchRoomsBy(title, page, isParticipation,memberId);
     }
 

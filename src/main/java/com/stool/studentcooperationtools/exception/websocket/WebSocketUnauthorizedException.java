@@ -1,8 +1,6 @@
 package com.stool.studentcooperationtools.exception.websocket;
 
-import org.springframework.security.access.AccessDeniedException;
-
-public class WebSocketUnauthorizedException extends AccessDeniedException {
+public class WebSocketUnauthorizedException extends RuntimeException {
     public WebSocketUnauthorizedException(final String msg) {
         super(msg);
     }

@@ -52,6 +52,14 @@ public class Part extends BaseTimeEntity {
         this.member = member;
     }
 
+    public static Part of(final String partName, final Member member, final Room room){
+        return Part.builder()
+                .partName(partName)
+                .member(member)
+                .room(room)
+                .build();
+    }
+
     public void update(final String partName){
         if(!StringUtils.hasText(partName)){
             //이름이 빈칸 혹은 null값일 경우

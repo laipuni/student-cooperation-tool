@@ -46,11 +46,7 @@ public class PartService {
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("역할을 추가할 방이 존재하지 않습니다."));
 
-        Part part = Part.builder()
-                .partName(request.getPartName())
-                .member(member)
-                .room(room)
-                .build();
+        Part part = Part.of(request.getPartName(), member, room);
         return PartAddWebsocketResponse.of(partRepository.save(part),member);
     }
 

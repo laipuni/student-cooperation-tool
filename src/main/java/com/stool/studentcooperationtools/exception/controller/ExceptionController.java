@@ -1,4 +1,4 @@
-package com.stool.studentcooperationtools.domain.api.controller;
+package com.stool.studentcooperationtools.exception.controller;
 
 
 import com.stool.studentcooperationtools.domain.api.ApiExceptionResponse;

@@ -1,12 +1,10 @@
 package com.stool.studentcooperationtools.domain.presentation.controller;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.auth.http.HttpCredentialsAdapter;
 import com.stool.studentcooperationtools.domain.api.ApiResponse;
 import com.stool.studentcooperationtools.domain.presentation.controller.response.PresentationFindResponse;
 import com.stool.studentcooperationtools.domain.presentation.service.PresentationService;
 import com.stool.studentcooperationtools.security.credential.GoogleCredentialProvider;
-import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,9 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 @RestController
 @RequiredArgsConstructor

@@ -91,4 +91,7 @@ public class Room extends BaseTimeEntity {
         this.participationNum--;
     }
 
+    public boolean isLeader(final Long memberId){
+        return this.leader.getId().equals(memberId);
+    }
 }

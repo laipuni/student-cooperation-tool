@@ -48,7 +48,7 @@ public class Part extends BaseTimeEntity {
         this.fileList.add(file);
     }
 
-    public void changeMember(Member member){
+    private void changeMember(Member member){
         this.member = member;
     }
 
@@ -60,7 +60,11 @@ public class Part extends BaseTimeEntity {
                 .build();
     }
 
-    public void update(final String partName){
+    public boolean isReplaceMember(final Long replaceMemberId){
+        return this.member.getId().equals(replaceMemberId);
+    }
+
+    private void changeReplaceName(final String partName){
         if(!StringUtils.hasText(partName)){
             //이름이 빈칸 혹은 null값일 경우
             throw new IllegalArgumentException("역할 이름은 필수입니다.");
@@ -69,9 +73,10 @@ public class Part extends BaseTimeEntity {
     }
 
     public void update(final Member member, final String partName){
-        if(member != null){
+        if(member != null && isReplaceMember(member.getId())){
+            //역할을 맡은 유저를 바뀌었을 경우
             changeMember(member);
         }
-        this.update(partName);
+        this.changeReplaceName(partName);
     }
 }

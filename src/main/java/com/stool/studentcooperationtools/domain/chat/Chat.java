@@ -42,4 +42,8 @@ public class Chat extends BaseTimeEntity {
                 .build();
     }
 
+    public boolean isWrittenBy(final Long memberId){
+        return this.member.getId().equals(memberId);
+    }
+
 }

@@ -53,7 +53,7 @@ public class WebsocketExceptionHandler {
         sendErrorMessage(e, getPrincipal(message));
     }
     @MessageExceptionHandler(value = IllegalStateException.class)
-    public void BindException(Message<?> message, IllegalStateException e) {
+    public void IllegalStateException(Message<?> message, IllegalStateException e) {
         log.error("[{}] {} {}",e.getClass().getSimpleName(), e.getMessage(), e.getCause());
         sendErrorMessage(e, getPrincipal(message));
     }

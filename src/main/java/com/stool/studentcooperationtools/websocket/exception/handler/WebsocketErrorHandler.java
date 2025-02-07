@@ -1,4 +1,4 @@
-package com.stool.studentcooperationtools.websocket;
+package com.stool.studentcooperationtools.websocket.exception.handler;
 
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;

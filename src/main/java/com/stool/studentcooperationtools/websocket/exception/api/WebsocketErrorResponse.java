@@ -1,4 +1,4 @@
-package com.stool.studentcooperationtools.websocket.controller.exception.api;
+package com.stool.studentcooperationtools.websocket.exception.api;
 
 import com.stool.studentcooperationtools.websocket.WebsocketMessageType;
 import lombok.AccessLevel;

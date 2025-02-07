@@ -1,6 +1,6 @@
 package com.stool.studentcooperationtools.websocket.config;
 
-import com.stool.studentcooperationtools.websocket.error.WebsocketErrorHandler;
+import com.stool.studentcooperationtools.websocket.exception.handler.WebsocketErrorHandler;
 import com.stool.studentcooperationtools.websocket.converter.SessionMemberMessageConverter;
 import com.stool.studentcooperationtools.websocket.interceptor.WebsocketRequestLogInterceptor;
 import com.stool.studentcooperationtools.websocket.interceptor.WebsocketSecurityInterceptor;

@@ -39,7 +39,7 @@ public class PartService {
     }
 
     @Transactional
-    public PartAddWebsocketResponse addPart(final PartAddWebsocketRequest request, final SessionMember sessionMember) {
+    public PartAddWebsocketResponse addPart(final PartAddWebsocketRequest request) {
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 존재하지 않습니다."));
 

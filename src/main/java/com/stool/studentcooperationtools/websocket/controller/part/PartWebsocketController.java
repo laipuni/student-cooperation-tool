@@ -27,7 +27,7 @@ public class PartWebsocketController {
 
     @MessageMapping("/parts/add")
     public void addPart(@Valid @RequestBody PartAddWebsocketRequest request, SessionMember member){
-        PartAddWebsocketResponse response = partService.addPart(request,member);
+        PartAddWebsocketResponse response = partService.addPart(request);
         sendingUtils.convertAndSend(
                 sendingUtils.creatPartResearchSubUrl(request.getRoomId()),
                 WebsocketResponse.of(PART_ADD,response)

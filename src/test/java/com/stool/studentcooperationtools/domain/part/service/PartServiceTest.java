@@ -102,7 +102,7 @@ class PartServiceTest extends IntegrationTest {
 
         //when
         //then
-        assertThatThrownBy(() -> partService.addPart(request, sessionMember))
+        assertThatThrownBy(() -> partService.addPart(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageMatching("역할을 추가하는 것을 실패했습니다.");
     }
@@ -136,7 +136,7 @@ class PartServiceTest extends IntegrationTest {
 
         //when
         //then
-        assertThatThrownBy(() -> partService.addPart(request, sessionMember))
+        assertThatThrownBy(() -> partService.addPart(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageMatching("역할을 추가할 방이 존재하지 않습니다.");
     }
@@ -173,7 +173,7 @@ class PartServiceTest extends IntegrationTest {
                 .build();
 
         //when
-        PartAddWebsocketResponse response = partService.addPart(request, sessionMember);
+        PartAddWebsocketResponse response = partService.addPart(request);
         List<Part> result = partRepository.findAll();
         //then
         assertThat(response).isNotNull()

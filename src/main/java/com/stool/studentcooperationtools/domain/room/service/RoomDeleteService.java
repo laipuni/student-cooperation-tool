@@ -18,12 +18,13 @@ import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository
 import com.stool.studentcooperationtools.domain.vote.respository.VoteRepository;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomDeleteService {
@@ -42,30 +43,36 @@ public class RoomDeleteService {
     private final FileRepository fileRepository;
 
     @Transactional
-    public Boolean removeRoom(SessionMember member, final RoomRemoveRequest request) {
+    public Boolean removeRoom(final SessionMember member, final RoomRemoveRequest request) {
         Room room = roomRepository.findRoomWithPLock(request.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("방 id 오류"));
-        if(Objects.equals(member.getMemberSeq(), room.getLeader().getId())){
-            removePartIn(room);
-            chatRepository.deleteByRoomId(room.getId());
-            removeTopicIn(room);
-            removePptIn(room);
-            participationRepository.deleteByRoomId(room.getId());
-            roomRepository.deleteById(room.getId());
-        }
-        else{
-            Member teammate = memberRepository.findById(member.getMemberSeq())
-                    .orElseThrow(() -> new IllegalArgumentException("유저 정보가 올바르지 않습니다"));
-            if(participationRepository.existsByMemberIdAndRoomId(teammate.getId(), room.getId())){
-                delParticipation(member, room);
-                participationRepository.deleteByMemberIdAndRoomId(teammate.getId(), room.getId());
-            }
-            else{
-                throw new IllegalArgumentException("참여 정보가 없는 유저입니다");
-            }
-
+                .orElseThrow(() -> new IllegalArgumentException("해당 방을 찾을 수 없습니다."));
+        if (room.isLeader(member.getMemberSeq())) {
+            removeRoomAsLeader(room);
+        } else {
+            leaveRoomAsMember(member.getMemberSeq(), room);
         }
         return true;
+    }
+
+    private void removeRoomAsLeader(final Room room) {
+        removePartIn(room);
+        chatRepository.deleteByRoomId(room.getId());
+        removeTopicIn(room);
+        removePptIn(room);
+        participationRepository.deleteByRoomId(room.getId());
+        roomRepository.deleteById(room.getId());
+        log.info("방이 삭제되었습니다. (Room ID: {})", room.getId());
+    }
+
+    private void leaveRoomAsMember(final Long memberId,final Room room) {
+        Member teammate = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+        if (!participationRepository.existsByMemberIdAndRoomId(teammate.getId(), room.getId())) {
+            throw new IllegalArgumentException("참여 정보가 없는 유저입니다.");
+        }
+        removeParticipation(teammate, room);
+        participationRepository.deleteByMemberIdAndRoomId(teammate.getId(), room.getId());
+        log.info("사용자(Id : {}) 가 방(Id : {})을 나갔습니다.", teammate.getId(), room.getId());
     }
 
     private void removePartIn(final Room room) {
@@ -73,30 +80,35 @@ public class RoomDeleteService {
         fileRepository.deleteAllByInPartId(partIdsByRoomId);
         reviewRepository.deleteAllByInPartId(partIdsByRoomId);
         partRepository.deleteByRoomId(room.getId());
-
+        log.info("Part, 파일, 리뷰 삭제 완료 (Room ID: {})", room.getId());
     }
 
     private void removePptIn(final Room room) {
         Long presentationId = presentationRepository.findPresentationIdByRoomId(room.getId());
-        slideRepository.deleteByPresentationId(presentationId);
-        scriptRepository.deleteByPresentationId(presentationId);
-        presentationRepository.deleteByRoomId(room.getId());
+        if (presentationId != null) {
+            slideRepository.deleteByPresentationId(presentationId);
+            scriptRepository.deleteByPresentationId(presentationId);
+            presentationRepository.deleteByRoomId(room.getId());
+            log.info("슬라이드, 스크립트, PPT 삭제 완료 (Room ID: {})", room.getId());
+        }
     }
 
     private void removeTopicIn(final Room room) {
         List<Long> topicIds = topicRepository.findTopicIdByRoomId(room.getId());
-        voteRepository.deleteAllByInTopicId(topicIds);
-        if(room.getMainTopic() != null){
+        if (!topicIds.isEmpty()) {
+            voteRepository.deleteAllByInTopicId(topicIds);
+        }
+        if (room.getMainTopic() != null) {
             room.updateTopic(null);
         }
         topicRepository.deleteByRoomId(room.getId());
+        log.info("토픽 및 투표 삭제 완료 (Room ID: {})", room.getId());
     }
 
-    private void delParticipation(SessionMember member, Room room){
-        Member user = memberRepository.findById(member.getMemberSeq())
-                .orElseThrow(() -> new IllegalArgumentException("유저 정보가 올바르지 않습니다"));
+    private void removeParticipation(final Member user,final Room room) {
         Participation participation = participationRepository.findByMemberIdAndRoomId(user.getId(), room.getId());
-        room.deleteParticipation(participation);
+        if (participation != null) {
+            room.deleteParticipation(participation);
+        }
     }
-
 }

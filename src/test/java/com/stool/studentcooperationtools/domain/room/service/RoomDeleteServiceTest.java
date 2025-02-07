@@ -14,7 +14,6 @@ import com.stool.studentcooperationtools.domain.participation.Participation;
 import com.stool.studentcooperationtools.domain.participation.repository.ParticipationRepository;
 import com.stool.studentcooperationtools.domain.presentation.Presentation;
 import com.stool.studentcooperationtools.domain.presentation.repository.PresentationRepository;
-import com.stool.studentcooperationtools.domain.presentation.service.PresentationService;
 import com.stool.studentcooperationtools.domain.review.Review;
 import com.stool.studentcooperationtools.domain.review.repository.ReviewRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
@@ -31,10 +30,8 @@ import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,28 +67,27 @@ class RoomDeleteServiceTest extends IntegrationTest {
     @Autowired
     RoomDeleteService roomDeleteService;
 
-    @MockBean
-    private PresentationService presentationService;
-
     @Test
     @DisplayName("소속되지 않은 방에 대해 삭제 요청 시 에러")
     void removeNotBelongingRoom() {
-        //given
+        // given
         Member user = Member.builder()
                 .role(Role.USER)
-                .email("email")
+                .email(UUID.randomUUID() + "@test.com")
                 .profile("profile")
                 .nickName("nickName")
                 .build();
         memberRepository.save(user);
         SessionMember member = SessionMember.of(user);
+
         Member leader = Member.builder()
                 .role(Role.USER)
-                .email("email")
+                .email(UUID.randomUUID() + "@test.com")
                 .profile("profile")
                 .nickName("nickName")
                 .build();
         memberRepository.save(leader);
+
         Room room = Room.builder()
                 .title("room")
                 .participationNum(1)
@@ -100,26 +96,30 @@ class RoomDeleteServiceTest extends IntegrationTest {
                 .build();
         roomRepository.save(room);
         participationRepository.save(Participation.of(leader, room));
+
         RoomRemoveRequest roomRemoveRequest = RoomRemoveRequest.builder()
                 .roomId(room.getId())
                 .build();
-        //when
-        //then
-        assertThrows(IllegalArgumentException.class, () -> roomDeleteService.removeRoom(member, roomRemoveRequest));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> roomDeleteService.removeRoom(member, roomRemoveRequest)
+        );
+
+        assertThat(exception.getMessage()).contains("참여 정보가 없는 유저입니다");
     }
 
     @Test
     @DisplayName("방장이 방 삭제 요청 시 방과 모든 참여 인원이 삭제")
     void removeRoomByLeader() {
-        //given
-        //given
+        // given
         Member owner = Member.builder()
-                .email("평가자 이메일")
+                .email(UUID.randomUUID() + "@test.com") // 중복 방지
                 .nickName("평가자")
                 .profile("평가자 프로필")
                 .role(Role.USER)
                 .build();
-
         memberRepository.save(owner);
 
         Room room = Room.builder()
@@ -130,11 +130,7 @@ class RoomDeleteServiceTest extends IntegrationTest {
                 .build();
         roomRepository.save(room);
 
-        Participation participation =Participation.builder()
-                .room(room)
-                .member(owner)
-                .build();
-        participationRepository.save(participation);
+        participationRepository.save(Participation.of(owner, room));
 
         Topic topic = Topic.builder()
                 .voteNum(1)
@@ -142,26 +138,21 @@ class RoomDeleteServiceTest extends IntegrationTest {
                 .topic("주제")
                 .room(room)
                 .build();
-        room.updateTopic(topic);
         topicRepository.save(topic);
 
-        String content = "조사할 부분";
         Part part = Part.builder()
-                .partName(content)
+                .partName("조사할 부분")
                 .room(room)
                 .member(owner)
                 .build();
+        partRepository.save(part);
 
-        String originalName = "originalFileName";
-        String fileName = UUID.randomUUID().toString();
         File file = File.builder()
                 .part(part)
-                .originalName(originalName)
-                .fileName(fileName)
+                .originalName("originalFileName")
+                .fileName(UUID.randomUUID().toString())
                 .fileType(FileType.DOCX)
                 .build();
-        part.addFile(file);
-        partRepository.save(part);
         fileRepository.save(file);
 
         Review review = Review.builder()
@@ -176,10 +167,13 @@ class RoomDeleteServiceTest extends IntegrationTest {
                 .room(room)
                 .build();
         presentationRepository.save(presentation);
+
         Script script = Script.builder()
                 .script("발표 내용")
                 .presentation(presentation)
                 .build();
+        scriptRepository.save(script);
+
         Slide slide = Slide.builder()
                 .script(script)
                 .slide_index(0)
@@ -187,7 +181,6 @@ class RoomDeleteServiceTest extends IntegrationTest {
                 .presentation(presentation)
                 .thumbnail("thumbnail")
                 .build();
-        scriptRepository.save(script);
         slideRepository.save(slide);
 
         RoomRemoveRequest roomRemoveRequest = RoomRemoveRequest.builder()
@@ -199,28 +192,19 @@ class RoomDeleteServiceTest extends IntegrationTest {
                 .nickName(owner.getNickName())
                 .build();
 
-        //when
+        // when
         Boolean result = roomDeleteService.removeRoom(sessionMember, roomRemoveRequest);
-        List<Room> rooms = roomRepository.findAll();
-        List<Part> parts = partRepository.findAll();
-        List<Topic> topics = topicRepository.findAll();
-        List<Participation> participations = participationRepository.findAll();
-        List<Review> reviews = reviewRepository.findAll();
-        List<File> files = fileRepository.findAll();
-        List<Script> scripts = scriptRepository.findAll();
-        List<Presentation> presentations = presentationRepository.findAll();
-        List<Slide> slides = slideRepository.findAll();
 
-        //then
+        // then
         assertThat(result).isTrue();
-        assertThat(rooms).isEmpty();
-        assertThat(parts).isEmpty();
-        assertThat(topics).isEmpty();
-        assertThat(participations).isEmpty();
-        assertThat(reviews).isEmpty();
-        assertThat(files).isEmpty();
-        assertThat(scripts).isEmpty();
-        assertThat(presentations).isEmpty();
-        assertThat(slides).isEmpty();
+        assertThat(roomRepository.count()).isEqualTo(0);
+        assertThat(partRepository.count()).isEqualTo(0);
+        assertThat(topicRepository.count()).isEqualTo(0);
+        assertThat(participationRepository.count()).isEqualTo(0);
+        assertThat(reviewRepository.count()).isEqualTo(0);
+        assertThat(fileRepository.count()).isEqualTo(0);
+        assertThat(scriptRepository.count()).isEqualTo(0);
+        assertThat(presentationRepository.count()).isEqualTo(0);
+        assertThat(slideRepository.count()).isEqualTo(0);
     }
 }

@@ -37,7 +37,7 @@ public class FileApiController {
             SessionMember sessionMember
     ){
         //해당 방의 참여자가 아니면 다운로드를 거부한다.
-        roomService.validParticipationInRoom(roomId,sessionMember);
+        roomService.validateParticipationInRoom(roomId,sessionMember);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,s3Service.getContentDisposition(fileName))
                 .body(s3Service.getUrlResource(fileName));

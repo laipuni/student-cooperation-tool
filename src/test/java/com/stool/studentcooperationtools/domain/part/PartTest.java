@@ -17,7 +17,7 @@ class PartTest {
                 .build();
         //when
         //then
-        assertThatThrownBy(() -> part.update(invalidPartName))
+        assertThatThrownBy(() -> part.update(null,invalidPartName))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageMatching("역할 이름은 필수입니다.");
     }

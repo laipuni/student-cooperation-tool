@@ -79,4 +79,8 @@ public class Part extends BaseTimeEntity {
         }
         this.changeReplaceName(partName);
     }
+
+    public boolean isResponsibleForPart(final Long memberId){
+        return this.member.getId().equals(memberId);
+    }
 }

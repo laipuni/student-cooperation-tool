@@ -17,12 +17,14 @@ import com.stool.studentcooperationtools.websocket.controller.part.response.Part
 import com.stool.studentcooperationtools.websocket.controller.part.response.PartDeleteWebsocketResponse;
 import com.stool.studentcooperationtools.websocket.controller.part.response.PartUpdateWebsocketResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -46,8 +48,9 @@ public class PartService {
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 방은 존재하지 않습니다."));
 
-        Part part = Part.of(request.getPartName(), member, room);
-        return PartAddWebsocketResponse.of(partRepository.save(part),member);
+        Part part = partRepository.save(Part.of(request.getPartName(), member, room));
+        log.info("팀원(id:{})의 역할(id:{})을 room(id:{})에 생성했다.",member.getId(),part.getId(),room.getId());
+        return PartAddWebsocketResponse.of(part,member);
     }
 
     @Transactional(rollbackFor = AccessDeniedException.class)
@@ -55,8 +58,10 @@ public class PartService {
         fileRepository.deleteAllByInPartId(List.of(request.getPartId()));
         int result = partRepository.deletePartByLeaderOrOwner(request.getPartId(), member.getMemberSeq());
         if(result == 0){
+            log.debug("사용자(Id : {})는 역할(Id : {})을 삭제할 권한이 없다.",member.getMemberSeq(),request.getPartId());
             throw new UnAuthorizationException("역할을 삭제할 권한이 없습니다.");
         }
+        log.info("사용자(Id : {})는 역할(Id : {})을 삭제했다.",member.getMemberSeq(),request.getPartId());
         return PartDeleteWebsocketResponse.of(request.getPartId());
     }
 
@@ -66,6 +71,7 @@ public class PartService {
                 .orElseThrow(() -> new IllegalArgumentException("수정할 역할이 존재하지 않습니다."));
         if(!part.getRoom().isLeader(request.getMemberId())){
             //방장이 아닌 경우
+            log.debug("사용자(Id : {})는 역할(Id : {})을 수정할 권한이 없다.",member.getMemberSeq(),request.getPartId());
             throw new UnAuthorizationException("역할을 수정할 권한이 없습니다.");
         }
 

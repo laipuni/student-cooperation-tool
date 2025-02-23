@@ -55,12 +55,12 @@ public class ChatService {
     public ChatDeleteWebsocketResponse deleteChat(final ChatDeleteWebsocketRequest request, final SessionMember member) {
         Chat chat = chatRepository.findById(request.getChatId())
                 .orElseThrow(() -> new IllegalArgumentException("삭제할 채팅이 존재하지 않습니다."));
-        if(chat.isWrittenBy(member.getMemberSeq())){
-            log.debug("사용자 {}은 권환 없이 채팅 제거 요청을 했다.",member.getNickName());
-            throw new UnAuthorizationException("채팅을 제거할 자격이 없습니다.");
+        if(!chat.isWrittenBy(member.getMemberSeq())){
+            log.debug("사용자(id : {})은 권환 없이 채팅 제거 요청을 했다.",member.getNickName());
+            throw new UnAuthorizationException("채팅을 제거할 권한이 없습니다.");
         }
         chatRepository.deleteById(request.getChatId());
-        log.info("사용자 {}이 채팅을 제거했다. (채팅 {})", member.getNickName(), chat.getId());
+        log.info("사용자(id: {})가 채팅(id : {})을 제거했다.", member.getNickName(), chat.getId());
         return new ChatDeleteWebsocketResponse(request.getChatId());
     }
 }

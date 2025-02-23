@@ -12,6 +12,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 import org.springframework.stereotype.Component;
@@ -32,24 +33,21 @@ public class WebsocketSecurityInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(final Message<?> message, final MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        OAuth2AuthenticationToken authentication = getOAuth2Authentication(accessor);
+        OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) accessor.getHeader("simpUser");
         if(SimpMessageType.CONNECT.equals(accessor.getMessageType())){
-            if(authentication == null) validSession(accessor);
+            validSession(authentication, accessor);
             validAuthorization(accessor, authentication);
         }
         return message;
     }
 
-    private static OAuth2AuthenticationToken getOAuth2Authentication(final StompHeaderAccessor accessor) {
-        return Optional.ofNullable((OAuth2AuthenticationToken) accessor.getHeader("simpUser"))
-                .orElseThrow(() -> new LoginRequiredException("로그인이 필요합니다."));
-    }
-
-    public void validSession(final StompHeaderAccessor accessor) {
+    public void validSession(final Authentication authentication, final StompHeaderAccessor accessor) {
         // 웹소켓 연결 전에 인증하지 않은 경우 authentication는 조회되지 않음
-        String jsessionid = accessor.getFirstNativeHeader(SESSION_NAME);
-        Optional.ofNullable(jdbcIndexedSessionRepository.findById(jsessionid))
-                .orElseThrow(() -> new LoginRequiredException("로그인이 필요합니다."));
+        if(authentication == null){
+            String jsessionid = accessor.getFirstNativeHeader(SESSION_NAME);
+            Optional.ofNullable(jdbcIndexedSessionRepository.findById(jsessionid))
+                    .orElseThrow(() -> new LoginRequiredException("로그인이 필요합니다."));
+        }
     }
 
     public void validAuthorization(final StompHeaderAccessor accessor, final OAuth2AuthenticationToken authentication) {

@@ -28,7 +28,7 @@ public class CredentialsAdapterArgumentResolver implements HandlerMethodArgument
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpCredentialsAdapter credentialsAdapter = googleCredentialProvider.getCredentialsAdapter();
         if (credentialsAdapter == null) {
-            return new VerifyException("credential adapter가 생성되지 않았습니다");
+            throw new VerifyException("credential adapter가 생성되지 않았습니다");
         }
         return credentialsAdapter;
     }

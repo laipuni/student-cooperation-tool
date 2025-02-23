@@ -61,7 +61,7 @@ public class Part extends BaseTimeEntity {
     }
 
     public boolean isReplaceMember(final Long replaceMemberId){
-        return this.member.getId().equals(replaceMemberId);
+        return !this.member.getId().equals(replaceMemberId);
     }
 
     private void changeReplaceName(final String partName){

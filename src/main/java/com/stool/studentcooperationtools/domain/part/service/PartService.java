@@ -69,7 +69,7 @@ public class PartService {
     public PartUpdateWebsocketResponse updatePart(final PartUpdateWebsocketRequest request, final SessionMember member) {
         Part part = partRepository.findById(request.getPartId())
                 .orElseThrow(() -> new IllegalArgumentException("수정할 역할이 존재하지 않습니다."));
-        if(!part.getRoom().isLeader(request.getMemberId())){
+        if(!part.getRoom().isLeader(member.getMemberSeq())){
             //방장이 아닌 경우
             log.debug("사용자(Id : {})는 역할(Id : {})을 수정할 권한이 없다.",member.getMemberSeq(),request.getPartId());
             throw new UnAuthorizationException("역할을 수정할 권한이 없습니다.");

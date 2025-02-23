@@ -104,7 +104,7 @@ class PartServiceTest extends IntegrationTest {
         //then
         assertThatThrownBy(() -> partService.addPart(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageMatching("역할을 추가하는 것을 실패했습니다.");
+                .hasMessageMatching("해당 유저는 존재하지 않습니다.");
     }
 
 
@@ -120,7 +120,7 @@ class PartServiceTest extends IntegrationTest {
                 .build();
         memberRepository.save(member);
 
-        String partName = "조사할 부분";
+        String partName = "역할 이름";
         Long invalidRoomId = 1L;
         PartAddWebsocketRequest request = PartAddWebsocketRequest.builder()
                 .roomId(invalidRoomId)
@@ -138,7 +138,7 @@ class PartServiceTest extends IntegrationTest {
         //then
         assertThatThrownBy(() -> partService.addPart(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageMatching("역할을 추가할 방이 존재하지 않습니다.");
+                .hasMessageMatching("해당 방은 존재하지 않습니다.");
     }
 
     @DisplayName("역할을 역할 요청을 받아 역할을 추가한다.")

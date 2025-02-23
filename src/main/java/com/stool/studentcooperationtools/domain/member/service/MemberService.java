@@ -12,11 +12,13 @@ import com.stool.studentcooperationtools.domain.member.controller.response.Membe
 import com.stool.studentcooperationtools.domain.member.controller.response.MemberSearchResponse;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -46,20 +48,22 @@ public class MemberService {
     @Transactional
     public Boolean addFriend(SessionMember member, final MemberAddRequest request) {
         Member user = memberRepository.findById(member.getMemberSeq())
-                .orElseThrow(() -> new IllegalArgumentException("유저 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 존재하지 않습니다."));
         Member friend = memberRepository.findById(request.getFriendId())
                 .orElseThrow(() -> new IllegalArgumentException("친구 추가할 유저가 존재하지 않습니다."));
         friendshipRepository.save(Friendship.of(user, friend));
+        log.info("사용자(ID: {})가 친구(ID: {})를 추가했다.", user.getId(), friend.getId());
         return true;
     }
 
     @Transactional
     public Boolean removeFriend(SessionMember member, final FriendRemoveRequest request){
         Member user = memberRepository.findById(member.getMemberSeq())
-                .orElseThrow(()->new IllegalArgumentException("등록되지 않은 유저 정보입니다."));
+                .orElseThrow(()->new IllegalArgumentException("해당 유저는 존재하지 않습니다."));
         Member friend = memberRepository.findMemberByEmail(request.getEmail())
-                .orElseThrow(()->new IllegalArgumentException("등록되지 않은 친구 정보입니다."));
+                .orElseThrow(()->new IllegalArgumentException("친구 추가할 유저가 존재하지 않습니다."));
         friendshipRepository.deleteByFriendId(user.getId(), friend.getId());
+        log.info("사용자(ID: {})가 친구(ID: {})를 제거했다.", user.getId(), friend.getId());
         return true;
     }
 }

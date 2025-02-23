@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import static com.stool.studentcooperationtools.websocket.WebsocketMessageType.*;
-import static com.stool.studentcooperationtools.websocket.config.WebsocketConfig.PART_RESEARCH_URL_FORMAT;
+import static com.stool.studentcooperationtools.websocket.controller.Utils.SimpleMessageSendingUtils.PART_RESEARCH_URL_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PartWebsocketControllerTest extends WebsocketTestSupport {
@@ -48,9 +48,7 @@ class PartWebsocketControllerTest extends WebsocketTestSupport {
                 .createTime(LocalDate.of(2024,11,5))
                 .build();
 
-        Mockito.when(partService.addPart(
-                Mockito.any(PartAddWebsocketRequest.class),Mockito.any(SessionMember.class)
-        )).thenReturn(response);
+        Mockito.when(partService.addPart(Mockito.any(PartAddWebsocketRequest.class))).thenReturn(response);
 
         stompSession.subscribe(PART_RESEARCH_URL_FORMAT.formatted(roomId),resultHandler);
         //when

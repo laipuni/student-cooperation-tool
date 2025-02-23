@@ -13,6 +13,7 @@ import com.stool.studentcooperationtools.domain.part.Part;
 import com.stool.studentcooperationtools.domain.part.repository.PartRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.s3.S3Service;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.file.request.FileDeleteWebsocketRequest;
@@ -22,7 +23,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
@@ -152,7 +152,7 @@ class FileServiceTest extends IntegrationTest {
         //when
         //then
         Assertions.assertThatThrownBy(() -> fileService.addFile(request,fileSet,sessionMember))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("파일을 올릴 권한이 없습니다.");
     }
 
@@ -324,7 +324,7 @@ class FileServiceTest extends IntegrationTest {
         //when
         //then
         assertThatThrownBy(() -> fileService.deleteFile(request,sessionMember))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("파일을 삭제할 권한이 없습니다.");
     }
 

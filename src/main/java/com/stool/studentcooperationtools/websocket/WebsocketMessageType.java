@@ -22,7 +22,8 @@ public enum WebsocketMessageType {
     PART_FILE_REMOVE("file_delete"),
     PRESENTATION_CREATE("presentation_create"),
     PRESENTATION_UPDATE("presentation_update"),
-    SCRIPT_UPDATE("script_update");
+    SCRIPT_UPDATE("script_update"),
+    ERROR("error");
 
     private final String key;
 

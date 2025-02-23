@@ -8,7 +8,14 @@ public class RoomEnterResponse {
     private Long leaderId;
 
     @Builder
-    private RoomEnterResponse(final long leaderId) {
+    private RoomEnterResponse(final Long leaderId) {
         this.leaderId = leaderId;
     }
+
+    public static RoomEnterResponse of(final Long memberId){
+        return RoomEnterResponse.builder()
+                .leaderId(memberId)
+                .build();
+    }
+
 }

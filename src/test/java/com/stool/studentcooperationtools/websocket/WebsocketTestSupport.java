@@ -73,11 +73,16 @@ public abstract class WebsocketTestSupport {
         stompHeaders.add(SESSION_NAME,"testSession");
         stompHeaders.add(SUB_URL_HEADER,"/sub/rooms/10/");
         stompHeaders.add("email","email@email.com");
-        stompSession = stompClient.connectAsync(URL,
-                new WebSocketHttpHeaders(),
-                stompHeaders,
-                new StompSessionHandlerAdapter() {
-                }).get(10, TimeUnit.SECONDS);
+        connect(stompHeaders);
+    }
+
+    private void connect(final StompHeaders stompHeaders) throws InterruptedException, ExecutionException {
+        try {
+            stompSession = stompClient.connectAsync(URL, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {})
+                    .get(10, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            throw new IllegalStateException("STOMP 연결 시간 초과", e);
+        }
     }
 
     @AfterEach

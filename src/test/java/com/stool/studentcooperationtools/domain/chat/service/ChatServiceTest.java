@@ -8,6 +8,7 @@ import com.stool.studentcooperationtools.domain.member.Role;
 import com.stool.studentcooperationtools.domain.member.repository.MemberRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import com.stool.studentcooperationtools.websocket.controller.chat.request.ChatAddWebsocketRequest;
 import com.stool.studentcooperationtools.websocket.controller.chat.request.ChatDeleteWebsocketRequest;
@@ -176,7 +177,7 @@ class ChatServiceTest extends IntegrationTest {
         assertThat(response).isNotNull();
     }
 
-    @DisplayName("채팅을 삭제할 때, 삭제하는 유저가 존재하지 않으면 에러가 발생한다.")
+    @DisplayName("채팅을 삭제할 때, 삭제할 채팅이 존재하지 않으면 에러가 발생한다.")
     @Test
     void deleteChatWithNotExistChat(){
         //given
@@ -259,7 +260,7 @@ class ChatServiceTest extends IntegrationTest {
         //when
         //then
         assertThatThrownBy(() -> chatService.deleteChat(request, sessionMember))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("채팅을 제거할 권한이 없습니다.");
     }
 

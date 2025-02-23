@@ -14,11 +14,11 @@ import com.stool.studentcooperationtools.domain.review.controller.response.Revie
 import com.stool.studentcooperationtools.domain.review.repository.ReviewRepository;
 import com.stool.studentcooperationtools.domain.room.Room;
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -261,7 +261,7 @@ class ReviewServiceTest extends IntegrationTest {
         //then
         assertThatThrownBy(() -> reviewService.addReview(request, sessionMember))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageMatching("평가를 등록할 역할이 존재하지 않습니다.");
+                .hasMessageMatching("해당 역할이 존재하지 않습니다.");
     }
 
     @DisplayName("리뷰를 삭제할 때, 본인이 작성한 리뷰가 아니면 삭제할 수 없다.")
@@ -320,7 +320,7 @@ class ReviewServiceTest extends IntegrationTest {
         //when
         //then
         assertThatThrownBy(() -> reviewService.deleteReview(request, sessionMember))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(UnAuthorizationException.class)
                 .hasMessageMatching("평가를 제거할 권한이 없습니다.");
     }
 

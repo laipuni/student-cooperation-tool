@@ -33,4 +33,12 @@ public class Review extends BaseTimeEntity {
         this.member = member;
     }
 
+    public static Review of(final String content, final Part part, final Member member){
+        return Review.builder()
+                .content(content)
+                .part(part)
+                .member(member)
+                .build();
+    }
+
 }

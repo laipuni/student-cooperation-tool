@@ -16,15 +16,15 @@ import com.stool.studentcooperationtools.domain.room.controller.response.RoomSea
 import com.stool.studentcooperationtools.domain.room.repository.RoomRepository;
 import com.stool.studentcooperationtools.domain.topic.Topic;
 import com.stool.studentcooperationtools.domain.topic.repository.TopicRepository;
+import com.stool.studentcooperationtools.exception.global.DuplicateDataException;
+import com.stool.studentcooperationtools.exception.global.UnAuthorizationException;
 import com.stool.studentcooperationtools.security.oauth2.dto.SessionMember;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -82,7 +82,7 @@ class RoomServiceTest extends IntegrationTest {
                 .build();
         //when
         //then
-        assertThrows(DataIntegrityViolationException.class, () -> roomService.addRoom(member, request));
+        assertThrows(DuplicateDataException.class, () -> roomService.addRoom(member, request));
     }
 
     @Test
@@ -364,7 +364,7 @@ class RoomServiceTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("팀장이 아닌 사람이 주제 등록 할 때 에러")
+    @DisplayName("주제를 등록할 때, 팀장이 아닌 사람이 주제 등록 할 경우 예외가 발생한다.")
     void updateRoomTopicByTeamMate() {
         //given
         Member user = Member.builder()
@@ -403,7 +403,7 @@ class RoomServiceTest extends IntegrationTest {
                 .build();
         //when
         //then
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(UnAuthorizationException.class,
                 () -> roomService.updateRoomTopic(member, request));
     }
 

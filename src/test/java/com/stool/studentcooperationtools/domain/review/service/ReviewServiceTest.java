@@ -261,7 +261,7 @@ class ReviewServiceTest extends IntegrationTest {
         //then
         assertThatThrownBy(() -> reviewService.addReview(request, sessionMember))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageMatching("평가를 등록할 역할이 존재하지 않습니다.");
+                .hasMessageMatching("해당 역할이 존재하지 않습니다.");
     }
 
     @DisplayName("리뷰를 삭제할 때, 본인이 작성한 리뷰가 아니면 삭제할 수 없다.")

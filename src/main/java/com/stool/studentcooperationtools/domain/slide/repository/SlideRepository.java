@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+
 public interface SlideRepository extends JpaRepository<Slide, Long> {
 
     @Query(value = "select s from Slide s join fetch s.script where s.presentation.id = :presentationId order by s.slide_idx")

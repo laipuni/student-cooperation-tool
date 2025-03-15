@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-@Repository
+
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     @Modifying
     @Query(value = "delete from Friendship f where f.me.id = :memberId and f.friend.id = :friendId")
